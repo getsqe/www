@@ -24,20 +24,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      # Official Astro action: detects the package manager, runs the build,
+      # and uploads the Pages artifact (from ./dist) in one step.
+      - name: Build with Astro
+        uses: withastro/action@v3
         with:
           node-version: 22
-          cache: npm
-      - run: npm ci
-      - name: Build (Astro)
-        run: npm run build
-      - name: Leak-scan the published output (blocking gate)
+      # Blocking publish-safety gate. Runs after the build; if it fails, the
+      # deploy job (needs: build) is skipped, so nothing leaked reaches Pages.
+      - name: Leak-scan the built output (blocking gate)
         run: bash scripts/leak-scan.sh dist
-      - name: Upload Pages artifact
-        if: github.event_name != 'pull_request'
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: dist
 
   # Deploy only on push to main / manual dispatch — never on PRs.
   deploy:
