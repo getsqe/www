@@ -1,0 +1,388 @@
+{
+  "score": {
+    "raw": 167,
+    "max": 189,
+    "percent": 88.4
+  },
+  "docUrl": "https://github.com/schubergphilis/sqe",
+  "cells": [
+    {
+      "key": "sqe:aws-glue-catalog:v2",
+      "feature": "Aws glue catalog",
+      "version": "V2",
+      "level": "full"
+    },
+    {
+      "key": "sqe:aws-glue-catalog:v3",
+      "feature": "Aws glue catalog",
+      "version": "V3",
+      "level": "full"
+    },
+    {
+      "key": "sqe:bloom-filters:v2",
+      "feature": "Bloom filters",
+      "version": "V2",
+      "level": "full"
+    },
+    {
+      "key": "sqe:bloom-filters:v3",
+      "feature": "Bloom filters",
+      "version": "V3",
+      "level": "full"
+    },
+    {
+      "key": "sqe:branching-tagging:v2",
+      "feature": "Branching tagging",
+      "version": "V2",
+      "level": "full"
+    },
+    {
+      "key": "sqe:branching-tagging:v3",
+      "feature": "Branching tagging",
+      "version": "V3",
+      "level": "full"
+    },
+    {
+      "key": "sqe:catalog-integration:v2",
+      "feature": "Catalog integration",
+      "version": "V2",
+      "level": "full"
+    },
+    {
+      "key": "sqe:catalog-integration:v3",
+      "feature": "Catalog integration",
+      "version": "V3",
+      "level": "full"
+    },
+    {
+      "key": "sqe:cdc-support:v3",
+      "feature": "Cdc support",
+      "version": "V3",
+      "level": "full"
+    },
+    {
+      "key": "sqe:column-default-values:v3",
+      "feature": "Column default values",
+      "version": "V3",
+      "level": "full"
+    },
+    {
+      "key": "sqe:copy-on-write:v2",
+      "feature": "Copy on write",
+      "version": "V2",
+      "level": "full"
+    },
+    {
+      "key": "sqe:copy-on-write:v3",
+      "feature": "Copy on write",
+      "version": "V3",
+      "level": "full"
+    },
+    {
+      "key": "sqe:equality-deletes:v2",
+      "feature": "Equality deletes",
+      "version": "V2",
+      "level": "full"
+    },
+    {
+      "key": "sqe:equality-deletes:v3",
+      "feature": "Equality deletes",
+      "version": "V3",
+      "level": "full"
+    },
+    {
+      "key": "sqe:geometry-type:v3",
+      "feature": "Geometry type",
+      "version": "V3",
+      "level": "none"
+    },
+    {
+      "key": "sqe:hadoop-catalog:v2",
+      "feature": "Hadoop catalog",
+      "version": "V2",
+      "level": "partial"
+    },
+    {
+      "key": "sqe:hadoop-catalog:v3",
+      "feature": "Hadoop catalog",
+      "version": "V3",
+      "level": "partial"
+    },
+    {
+      "key": "sqe:hidden-partitioning:v2",
+      "feature": "Hidden partitioning",
+      "version": "V2",
+      "level": "full"
+    },
+    {
+      "key": "sqe:hidden-partitioning:v3",
+      "feature": "Hidden partitioning",
+      "version": "V3",
+      "level": "full"
+    },
+    {
+      "key": "sqe:hive-metastore:v2",
+      "feature": "Hive metastore",
+      "version": "V2",
+      "level": "full"
+    },
+    {
+      "key": "sqe:hive-metastore:v3",
+      "feature": "Hive metastore",
+      "version": "V3",
+      "level": "full"
+    },
+    {
+      "key": "sqe:jdbc-catalog:v2",
+      "feature": "Jdbc catalog",
+      "version": "V2",
+      "level": "full"
+    },
+    {
+      "key": "sqe:jdbc-catalog:v3",
+      "feature": "Jdbc catalog",
+      "version": "V3",
+      "level": "full"
+    },
+    {
+      "key": "sqe:lineage:v3",
+      "feature": "Lineage",
+      "version": "V3",
+      "level": "none"
+    },
+    {
+      "key": "sqe:merge-on-read:v2",
+      "feature": "Merge on read",
+      "version": "V2",
+      "level": "full"
+    },
+    {
+      "key": "sqe:merge-on-read:v3",
+      "feature": "Merge on read",
+      "version": "V3",
+      "level": "full"
+    },
+    {
+      "key": "sqe:multi-arg-transforms:v3",
+      "feature": "Multi arg transforms",
+      "version": "V3",
+      "level": "none"
+    },
+    {
+      "key": "sqe:nanosecond-timestamps:v3",
+      "feature": "Nanosecond timestamps",
+      "version": "V3",
+      "level": "full"
+    },
+    {
+      "key": "sqe:nessie:v2",
+      "feature": "Nessie",
+      "version": "V2",
+      "level": "full"
+    },
+    {
+      "key": "sqe:nessie:v3",
+      "feature": "Nessie",
+      "version": "V3",
+      "level": "full"
+    },
+    {
+      "key": "sqe:partition-evolution:v2",
+      "feature": "Partition evolution",
+      "version": "V2",
+      "level": "full"
+    },
+    {
+      "key": "sqe:partition-evolution:v3",
+      "feature": "Partition evolution",
+      "version": "V3",
+      "level": "full"
+    },
+    {
+      "key": "sqe:polaris:v2",
+      "feature": "Polaris",
+      "version": "V2",
+      "level": "full"
+    },
+    {
+      "key": "sqe:polaris:v3",
+      "feature": "Polaris",
+      "version": "V3",
+      "level": "full"
+    },
+    {
+      "key": "sqe:position-deletes:v2",
+      "feature": "Position deletes",
+      "version": "V2",
+      "level": "full"
+    },
+    {
+      "key": "sqe:position-deletes:v3",
+      "feature": "Position deletes",
+      "version": "V3",
+      "level": "full"
+    },
+    {
+      "key": "sqe:read-support:v2",
+      "feature": "Read support",
+      "version": "V2",
+      "level": "full"
+    },
+    {
+      "key": "sqe:read-support:v3",
+      "feature": "Read support",
+      "version": "V3",
+      "level": "full"
+    },
+    {
+      "key": "sqe:rest-catalog:v2",
+      "feature": "Rest catalog",
+      "version": "V2",
+      "level": "full"
+    },
+    {
+      "key": "sqe:rest-catalog:v3",
+      "feature": "Rest catalog",
+      "version": "V3",
+      "level": "full"
+    },
+    {
+      "key": "sqe:schema-evolution:v2",
+      "feature": "Schema evolution",
+      "version": "V2",
+      "level": "full"
+    },
+    {
+      "key": "sqe:schema-evolution:v3",
+      "feature": "Schema evolution",
+      "version": "V3",
+      "level": "full"
+    },
+    {
+      "key": "sqe:shredded-variant:v3",
+      "feature": "Shredded variant",
+      "version": "V3",
+      "level": "none"
+    },
+    {
+      "key": "sqe:snowflake-horizon-catalog:v2",
+      "feature": "Snowflake horizon catalog",
+      "version": "V2",
+      "level": "partial"
+    },
+    {
+      "key": "sqe:snowflake-horizon-catalog:v3",
+      "feature": "Snowflake horizon catalog",
+      "version": "V3",
+      "level": "partial"
+    },
+    {
+      "key": "sqe:statistics:v2",
+      "feature": "Statistics",
+      "version": "V2",
+      "level": "full"
+    },
+    {
+      "key": "sqe:statistics:v3",
+      "feature": "Statistics",
+      "version": "V3",
+      "level": "full"
+    },
+    {
+      "key": "sqe:table-creation:v2",
+      "feature": "Table creation",
+      "version": "V2",
+      "level": "full"
+    },
+    {
+      "key": "sqe:table-creation:v3",
+      "feature": "Table creation",
+      "version": "V3",
+      "level": "full"
+    },
+    {
+      "key": "sqe:table-maintenance:v2",
+      "feature": "Table maintenance",
+      "version": "V2",
+      "level": "full"
+    },
+    {
+      "key": "sqe:table-maintenance:v3",
+      "feature": "Table maintenance",
+      "version": "V3",
+      "level": "full"
+    },
+    {
+      "key": "sqe:time-travel:v2",
+      "feature": "Time travel",
+      "version": "V2",
+      "level": "full"
+    },
+    {
+      "key": "sqe:time-travel:v3",
+      "feature": "Time travel",
+      "version": "V3",
+      "level": "full"
+    },
+    {
+      "key": "sqe:type-promotion:v2",
+      "feature": "Type promotion",
+      "version": "V2",
+      "level": "full"
+    },
+    {
+      "key": "sqe:type-promotion:v3",
+      "feature": "Type promotion",
+      "version": "V3",
+      "level": "full"
+    },
+    {
+      "key": "sqe:unity-catalog:v2",
+      "feature": "Unity catalog",
+      "version": "V2",
+      "level": "full"
+    },
+    {
+      "key": "sqe:unity-catalog:v3",
+      "feature": "Unity catalog",
+      "version": "V3",
+      "level": "full"
+    },
+    {
+      "key": "sqe:variant-type:v3",
+      "feature": "Variant type",
+      "version": "V3",
+      "level": "none"
+    },
+    {
+      "key": "sqe:vector-type:v3",
+      "feature": "Vector type",
+      "version": "V3",
+      "level": "none"
+    },
+    {
+      "key": "sqe:write-insert:v2",
+      "feature": "Write insert",
+      "version": "V2",
+      "level": "full"
+    },
+    {
+      "key": "sqe:write-insert:v3",
+      "feature": "Write insert",
+      "version": "V3",
+      "level": "full"
+    },
+    {
+      "key": "sqe:write-merge-update-delete:v2",
+      "feature": "Write merge update delete",
+      "version": "V2",
+      "level": "full"
+    },
+    {
+      "key": "sqe:write-merge-update-delete:v3",
+      "feature": "Write merge update delete",
+      "version": "V3",
+      "level": "full"
+    }
+  ]
+}

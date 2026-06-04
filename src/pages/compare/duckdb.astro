@@ -1,0 +1,31 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import MonoEyebrow from '../../components/MonoEyebrow.astro';
+import MarkerBar from '../../components/MarkerBar.astro';
+import { getEntry, render } from 'astro:content';
+
+const entry = await getEntry('compare', 'duckdb');
+if (!entry) throw new Error('compare/duckdb content missing — run npm run sync');
+const { Content } = await render(entry);
+---
+<BaseLayout
+  title="SQE vs DuckDB — embedded engine comparison | getsqe.com"
+  description="What SQE has that DuckDB does not, and vice versa — the symmetry between the two on the embedded side, plus SQE's distributed and multi-catalog story."
+>
+  <section class="section">
+    <div class="container doc">
+      <header class="doc__head">
+        <MonoEyebrow text="Comparison" />
+        <MarkerBar />
+        <p class="doc__crumb"><a href="/compare/iceberg">Iceberg matrix</a> · <a href="/compare/trino">vs Trino</a> · <a href="/compare/features">SQL features</a></p>
+      </header>
+      <article class="prose"><Content /></article>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .doc { max-width: 880px; }
+  .doc__head { margin-bottom: 28px; }
+  .doc__crumb { font-size: 0.9rem; color: var(--text-muted); margin: 8px 0 0; }
+</style>

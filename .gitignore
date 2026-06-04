@@ -1,0 +1,18 @@
+# build output
+dist/
+# deps
+node_modules/
+# astro
+.astro/
+# os
+.DS_Store
+# env
+.env
+.env.production
+
+# Ebook binaries are NOT committed: the current PDF/EPUB (built 2026-05-15)
+# contain unsanitized content (real AWS account id, internal crate paths) and
+# the text leak-gate cannot scan binaries. Rebuild from sanitized source before
+# re-enabling downloads. See PUBLISH-CHECKLIST.md.
+public/downloads/*.pdf
+public/downloads/*.epub

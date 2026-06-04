@@ -1,0 +1,136 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import MonoEyebrow from '../../components/MonoEyebrow.astro';
+import MarkerBar from '../../components/MarkerBar.astro';
+import { getCollection } from 'astro:content';
+
+// Publishable metadata (verbatim public subset of docs/ebook/metadata.yaml).
+const BOOK = {
+  title: 'Sovereign by Design',
+  subtitle: 'Building a Production Query Engine on DataFusion',
+  author: 'Jacob Verhoeks',
+  description:
+    'The complete journey of replacing Trino with a purpose-built Rust query engine. From first DataFusion query to distributed execution over Apache Iceberg, with OIDC auth passthrough, policy-as-plan-rewriting, and zero service accounts. A practitioner’s guide to building data infrastructure you actually own.',
+  pages: '≈370 pages',
+  parts: 'Twenty chapters across five parts',
+};
+
+function titleFromId(id: string) {
+  // "04-you-are-the-query" -> "You are the query"
+  const s = id.replace(/^\d+[a-z]?-/, '').replace(/-/g, ' ');
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+function chapterTitle(entry: { id: string; body?: string }) {
+  const m = entry.body?.match(/^#\s+(.+)$/m);
+  return m ? m[1].replace(/[*_`]/g, '').trim() : titleFromId(entry.id);
+}
+function chapterNumber(id: string) {
+  const m = id.match(/^(\d+[a-z]?)/);
+  return m ? m[1] : '';
+}
+
+const chapters = (await getCollection('ebook'))
+  .sort((a, b) => a.id.localeCompare(b.id))
+  .map((e) => ({ id: e.id, num: chapterNumber(e.id), title: chapterTitle(e) }));
+
+const firstReadable = chapters[0]?.id ?? '';
+---
+<BaseLayout
+  title={`${BOOK.title} — ${BOOK.subtitle}`}
+  description={BOOK.description}
+>
+  <section class="section ebook-hero">
+    <div class="container ebook-hero__inner">
+      <div class="cover" aria-hidden="true">
+        <span class="cover__eyebrow">SQE</span>
+        <span class="cover__title">Sovereign<br />by Design</span>
+        <span class="cover__rule"></span>
+        <span class="cover__sub">Building a Production Query Engine on DataFusion</span>
+        <span class="cover__author">{BOOK.author}</span>
+      </div>
+      <div class="ebook-hero__copy">
+        <MonoEyebrow text="The book" />
+        <h1>{BOOK.title}</h1>
+        <p class="ebook-hero__sub">{BOOK.subtitle}</p>
+        <p class="ebook-hero__desc">{BOOK.description}</p>
+        <p class="ebook-hero__meta">{BOOK.parts} · {BOOK.pages} · by {BOOK.author}</p>
+        <div class="ebook-hero__cta">
+          {firstReadable && <a class="btn btn--primary" href={`/ebook/${firstReadable}`}>Read online</a>}
+          <a class="btn btn--ghost-dark" href="#contents">Browse chapters</a>
+        </div>
+        <p class="ebook-hero__pending">PDF &amp; EPUB downloads are being prepared.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--tight toc" id="contents">
+    <div class="container">
+      <MonoEyebrow text="Contents" />
+      <MarkerBar yellow />
+      <h2>Chapters</h2>
+      <ol class="toc__list">
+        {chapters.map((c) => (
+          <li class="toc__item">
+            <a href={`/ebook/${c.id}`}>
+              <span class="toc__num">{c.num}</span>
+              <span class="toc__title">{c.title}</span>
+              <span class="toc__arrow">→</span>
+            </a>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .ebook-hero { background: var(--space-gray); color: #fff; }
+  .ebook-hero__inner { display: grid; grid-template-columns: 280px 1fr; gap: 48px; align-items: center; }
+  .ebook-hero h1 { color: #fff; margin: 12px 0 4px; }
+  .ebook-hero__sub { color: var(--turquoise); font-size: 1.1rem; font-weight: 600; }
+  .ebook-hero__desc { color: rgba(255, 255, 255, 0.8); max-width: 54ch; margin-top: 14px; }
+  .ebook-hero__meta { font-family: var(--font-mono); font-size: 0.82rem; color: rgba(255, 255, 255, 0.55); margin-top: 14px; }
+  .ebook-hero__cta { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 26px; }
+  .ebook-hero__pending { margin-top: 14px; font-family: var(--font-mono); font-size: 0.78rem; color: rgba(255, 255, 255, 0.5); }
+  .ebook-hero__cta .btn--ghost-dark { color: #fff; border-color: rgba(255,255,255,0.28); }
+  .ebook-hero__cta .btn--ghost-dark:hover { border-color: rgba(255,255,255,0.6); color: #fff; }
+
+  /* designed cover (no external image dependency) */
+  .cover {
+    aspect-ratio: 3 / 4;
+    border-radius: 10px;
+    background: linear-gradient(160deg, #020c17 0%, #082646 60%, #0b3566 100%);
+    border: 1px solid rgba(30, 232, 237, 0.25);
+    box-shadow: 0 30px 60px -28px rgba(0, 0, 0, 0.8);
+    padding: 28px 24px;
+    display: flex;
+    flex-direction: column;
+    color: #fff;
+  }
+  .cover__eyebrow { font-family: var(--font-mono); color: var(--turquoise); letter-spacing: 0.2em; font-size: 0.8rem; }
+  .cover__title { font-weight: 900; font-size: 1.9rem; line-height: 1.05; letter-spacing: -0.02em; margin-top: auto; }
+  .cover__rule { width: 48px; height: 4px; background: var(--yellow); border-radius: 2px; margin: 14px 0; }
+  .cover__sub { font-size: 0.86rem; color: rgba(255, 255, 255, 0.78); }
+  .cover__author { margin-top: 18px; font-family: var(--font-mono); font-size: 0.8rem; color: rgba(255, 255, 255, 0.6); }
+
+  .toc__list { list-style: none; padding: 0; margin: 22px 0 0; display: grid; grid-template-columns: 1fr 1fr; gap: 8px 28px; counter-reset: none; }
+  .toc__item a {
+    display: flex; align-items: center; gap: 14px;
+    padding: 12px 14px; border-radius: 8px; border: 1px solid var(--border);
+    background: #fff; color: var(--text); font-weight: 600;
+    transition: border-color 0.15s ease, transform 0.08s ease;
+  }
+  .toc__item a:hover { border-color: var(--sqe-blue); transform: translateX(2px); text-decoration: none; }
+  .toc__num { font-family: var(--font-mono); font-weight: 800; color: var(--sqe-blue); min-width: 2.4ch; }
+  .toc__title { flex: 1; }
+  .toc__arrow { color: var(--gray-medium); }
+
+  @media (max-width: 820px) {
+    .ebook-hero__inner { grid-template-columns: 200px 1fr; gap: 28px; }
+    .toc__list { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 560px) {
+    .ebook-hero__inner { grid-template-columns: 1fr; }
+    .cover { max-width: 240px; }
+  }
+</style>

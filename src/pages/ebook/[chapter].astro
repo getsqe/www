@@ -1,0 +1,75 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection, render } from 'astro:content';
+import type { GetStaticPaths } from 'astro';
+
+export const getStaticPaths = (async () => {
+  const entries = (await getCollection('ebook')).sort((a, b) => a.id.localeCompare(b.id));
+  return entries.map((entry, i) => ({
+    params: { chapter: entry.id },
+    props: {
+      entry,
+      prev: entries[i - 1] ?? null,
+      next: entries[i + 1] ?? null,
+    },
+  }));
+}) satisfies GetStaticPaths;
+
+const { entry, prev, next } = Astro.props;
+const { Content } = await render(entry);
+
+function titleOf(e: { id: string; body?: string } | null) {
+  if (!e) return '';
+  const m = e.body?.match(/^#\s+(.+)$/m);
+  return m ? m[1].replace(/[*_`]/g, '').trim() : e.id;
+}
+const title = titleOf(entry);
+---
+<BaseLayout
+  title={`${title} — Sovereign by Design`}
+  description={`${title} — a chapter from "Sovereign by Design: Building a Production Query Engine on DataFusion".`}
+>
+  <section class="section">
+    <div class="container chapter">
+      <p class="chapter__crumb">
+        <a href="/ebook">← Sovereign by Design</a>
+      </p>
+      <article class="prose chapter__body"><Content /></article>
+
+      <nav class="chapter__nav" aria-label="Chapter navigation">
+        {prev ? (
+          <a class="chapter__navlink chapter__navlink--prev" href={`/ebook/${prev.id}`}>
+            <span class="chapter__navdir">← Previous</span>
+            <span class="chapter__navtitle">{titleOf(prev)}</span>
+          </a>
+        ) : <span />}
+        {next ? (
+          <a class="chapter__navlink chapter__navlink--next" href={`/ebook/${next.id}`}>
+            <span class="chapter__navdir">Next →</span>
+            <span class="chapter__navtitle">{titleOf(next)}</span>
+          </a>
+        ) : <span />}
+      </nav>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .chapter { max-width: 760px; }
+  .chapter__crumb { font-size: 0.9rem; margin-bottom: 18px; }
+  .chapter__body { font-size: 1.05rem; line-height: 1.75; }
+  .chapter__body :global(h1) { font-size: clamp(2rem, 4vw, 2.8rem); margin-bottom: 0.6em; }
+  .chapter__nav {
+    display: flex; justify-content: space-between; gap: 16px;
+    margin-top: 56px; padding-top: 28px; border-top: 1px solid var(--border);
+  }
+  .chapter__navlink {
+    display: flex; flex-direction: column; gap: 4px;
+    padding: 14px 18px; border: 1px solid var(--border); border-radius: 10px;
+    max-width: 48%; background: #fff; transition: border-color 0.15s ease;
+  }
+  .chapter__navlink:hover { border-color: var(--sqe-blue); text-decoration: none; }
+  .chapter__navlink--next { text-align: right; margin-left: auto; }
+  .chapter__navdir { font-family: var(--font-mono); font-size: 0.78rem; color: var(--sqe-blue); }
+  .chapter__navtitle { font-weight: 700; color: var(--text); }
+</style>

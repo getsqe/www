@@ -1,0 +1,31 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import MonoEyebrow from '../../components/MonoEyebrow.astro';
+import MarkerBar from '../../components/MarkerBar.astro';
+import { getEntry, render } from 'astro:content';
+
+const entry = await getEntry('compare', 'trino');
+if (!entry) throw new Error('compare/trino content missing — run npm run sync');
+const { Content } = await render(entry);
+---
+<BaseLayout
+  title="SQE vs Trino — SQL & feature compatibility | getsqe.com"
+  description="SQL function and feature parity between SQE and Trino, category by category. Connect existing Trino clients over the Trino HTTP protocol."
+>
+  <section class="section">
+    <div class="container doc">
+      <header class="doc__head">
+        <MonoEyebrow text="Comparison" />
+        <MarkerBar />
+        <p class="doc__crumb"><a href="/compare/iceberg">Iceberg matrix</a> · <a href="/compare/duckdb">vs DuckDB</a> · <a href="/compare/features">SQL features</a></p>
+      </header>
+      <article class="prose"><Content /></article>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .doc { max-width: 880px; }
+  .doc__head { margin-bottom: 28px; }
+  .doc__crumb { font-size: 0.9rem; color: var(--text-muted); margin: 8px 0 0; }
+</style>

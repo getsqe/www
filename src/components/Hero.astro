@@ -1,0 +1,107 @@
+---
+// Dark hero with the terminal demo and CTAs. Landing page only.
+import Terminal from './Terminal.astro';
+const GITHUB = 'https://github.com/schubergphilis/sqe';
+const DOCS = 'https://docs.getsqe.com';
+---
+<section class="hero">
+  <div class="container hero__inner">
+    <div class="hero__copy">
+      <span class="hero__eyebrow">Sovereign Query Engine</span>
+      <h1 class="hero__title">Iceberg-first SQL<br />that scales.</h1>
+      <p class="hero__lede">
+        Run SQE embedded as one binary on your laptop, or distributed across a cluster of
+        stateless workers behind Arrow Flight SQL or Trino HTTP. Same SQL surface, same Iceberg
+        semantics, same identity model. Every query runs as the authenticated user —
+        <strong>no service account, no shared root.</strong>
+      </p>
+      <div class="hero__cta">
+        <a class="btn btn--primary" href={`${DOCS}`}>Get started</a>
+        <a class="btn btn--ghost" href={DOCS}>View docs</a>
+        <a class="btn btn--ghost" href={GITHUB} rel="noopener">GitHub ↗</a>
+      </div>
+      <p class="hero__note">
+        Build from source: <code>cargo install --path crates/sqe-cli</code> — Apache-2.0, Rust, no JVM.
+      </p>
+    </div>
+
+    <div class="hero__demo">
+      <Terminal title="sqe-cli --embedded">
+        <span class="t-line t-comment"># Point SQE at AWS S3 Tables and run it as a SQL server.</span>
+        <span class="t-line"><span class="t-prompt">$</span> <span class="t-cmd">sqe-cli --embedded</span></span>
+        <span class="t-line t-out">SQE 0.15.0 · DataFusion 53.1 · ~/.sqe/warehouse/</span>
+        <span class="t-line"> </span>
+        <span class="t-line t-comment"># Iceberg time travel + per-query identity.</span>
+        <span class="t-line"><span class="t-prompt">sqe&gt;</span> <span class="t-kw">SELECT</span> customer_id, <span class="t-fn">sum</span>(amount)</span>
+        <span class="t-line">  <span class="t-out">...&gt;</span> <span class="t-kw">FROM</span> s3tables.sales.orders</span>
+        <span class="t-line">  <span class="t-out">...&gt;</span> <span class="t-kw">FOR TIMESTAMP AS OF</span> <span class="t-str">'2026-04-01'</span>;</span>
+        <span class="t-line"> </span>
+        <span class="t-line t-out">+-------------+-------------+</span>
+        <span class="t-line t-out">| customer_id | sum(amount) |</span>
+        <span class="t-line t-out">+-------------+-------------+</span>
+        <span class="t-line t-out">| 100482      | 18204.55    |</span>
+        <span class="t-line t-out">+-------------+-------------+</span>
+        <span class="t-line t-out">12 rows · 47ms</span>
+      </Terminal>
+    </div>
+  </div>
+</section>
+
+<style>
+  .hero {
+    background: var(--space-gray);
+    color: #fff;
+    padding-block: clamp(48px, 7vw, 96px);
+    background-image:
+      radial-gradient(900px 400px at 78% -10%, rgba(30, 232, 237, 0.1), transparent 60%),
+      radial-gradient(700px 380px at 10% 110%, rgba(30, 128, 237, 0.16), transparent 60%);
+  }
+  .hero__inner {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 52px;
+    align-items: center;
+  }
+  .hero__eyebrow {
+    font-family: var(--font-mono);
+    color: var(--turquoise);
+    font-size: 0.82rem;
+    letter-spacing: 0.1em;
+    font-weight: 600;
+  }
+  .hero__title {
+    margin: 14px 0 20px;
+    font-size: clamp(2.6rem, 5.2vw, 4rem);
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    color: #fff;
+  }
+  .hero__lede {
+    font-size: 1.12rem;
+    color: rgba(255, 255, 255, 0.8);
+    max-width: 46ch;
+  }
+  .hero__lede strong { color: #fff; }
+  .hero__cta {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 28px;
+  }
+  .hero__note {
+    margin-top: 22px;
+    font-size: 0.86rem;
+    color: rgba(255, 255, 255, 0.55);
+  }
+  .hero__note code {
+    font-family: var(--font-mono);
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--turquoise);
+    padding: 0.15em 0.45em;
+    border-radius: 5px;
+    font-size: 0.92em;
+  }
+  @media (max-width: 900px) {
+    .hero__inner { grid-template-columns: 1fr; gap: 36px; }
+  }
+</style>
