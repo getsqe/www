@@ -66,7 +66,10 @@ sed -i '' \
   -e 's#MR ![0-9][0-9]*#an earlier change#g' \
   -e 's#feat/[A-Za-z0-9._-][A-Za-z0-9._-]*#a feature branch#g' \
   -e 's#chore/[A-Za-z0-9._-][A-Za-z0-9._-]*#a maintenance branch#g' \
+  -e 's# *{[#.][^}]*}##g' \
   "${SANITIZE_FILES[@]}"
+# (last rule strips Pandoc attribute blocks like `{#sec:auth}` / `{.unnumbered}`
+#  on headings — the ebook is authored for Pandoc; Astro renders them literally.)
 
 # --- 4. leak-scan gate (BLOCKING) -------------------------------------------
 # Delegates to the shared gate (single source of truth, also run in CI).

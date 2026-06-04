@@ -1,4 +1,4 @@
-# The Lineage Trail {#sec:lineage-trail}
+# The Lineage Trail
 
 > Lineage is the question every data team asks at 3 AM:
 > "Where did this number come from?"

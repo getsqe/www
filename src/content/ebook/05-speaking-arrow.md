@@ -1,4 +1,4 @@
-# Speaking Arrow {#sec:flightsql}
+# Speaking Arrow
 
 > The wire protocol is the user experience.
 > Everything else is implementation detail.
@@ -123,7 +123,7 @@ And these are explicitly `Unimplemented`:
 
 The pattern: we implement everything a SQL client needs to discover metadata, execute queries, upload data, and manage prepared statements. We skip Substrait (an alternative query representation we don't use) and transactions (Iceberg commits are atomic per-table, not cross-table).
 
-::: {.datafusion}
+:::
 **DataFusion deep dive:** The `FlightSqlService` trait has a `type FlightService` associated type that must
 be `Self`. This is how the `arrow-flight` crate connects the SQL-layer trait to the underlying gRPC
 `FlightService` implementation. When you implement `FlightSqlService`, you automatically get the
@@ -288,7 +288,7 @@ The `total_records` is -1, meaning "unknown". We could execute the query during 
 
 The `location` field in the endpoint is empty, which means "fetch from the same server." In a distributed setup, you could return different locations pointing to different workers -- but SQE's distributed execution is handled internally by the coordinator, not by directing clients to specific workers. The client always talks to the coordinator.
 
-::: {.deadend}
+:::
 **Dead end: executing during GetFlightInfo.** We initially tried executing the full query during
 `get_flight_info_statement` and caching the result batches, so `do_get_statement` could just
 stream them from memory. This worked for small result sets but fell apart on queries returning
@@ -388,7 +388,7 @@ async fn do_get_fallback(
 
 The `FetchResults` is a custom protobuf message defined in the SQE codebase. It carries a single string field: the SQL query handle. When `get_flight_info_statement` creates a ticket, it encodes the SQL into this message. The fallback handler checks the `type_url`, decodes the message, and executes the query. This is the path most JDBC clients actually take, because the Arrow Flight SQL JDBC driver uses the generic `DoGet` RPC, not the SQL-specific `DoGetStatement` one.
 
-::: {.fieldreport}
+:::
 **Field report:** The Arrow Flight SQL JDBC driver (version 15.0) routes all queries through
 `do_get_fallback`, not `do_get_statement`. We discovered this during the first DBeaver test.
 The standard `do_get_statement` handler was never hit. Without the fallback, DBeaver
@@ -580,7 +580,7 @@ The fix is straightforward in principle: instead of `execute()` returning a `Vec
 
 We haven't done this yet. It's a clear next step, and it's the kind of improvement that becomes urgent exactly once someone runs `SELECT * FROM a_very_large_table` in production.
 
-::: {.datafusion}
+:::
 **DataFusion deep dive:** DataFusion's `collect()` function gathers all batches into a Vec. For streaming,
 you'd use `execute_stream()` on the physical plan, which returns a `SendableRecordBatchStream`.
 The `FlightDataEncoderBuilder` in the `arrow-flight` crate can wrap this stream directly,
@@ -657,7 +657,7 @@ The 20+ methods in the FlightSqlService trait looked intimidating at first. Most
 
 Good plumbing is invisible. Users don't think about the wire protocol. They open DBeaver, type a connection string, and run queries. The protocol's job is to never be the reason something doesn't work. Flight SQL has held up its end of that bargain.
 
-::: {.fieldreport}
+:::
 **Field report:** The first integration test -- Flight SQL handshake with OIDC, followed by a SELECT query
 against an Iceberg table via Polaris -- passed on March 14, the same day the crates were scaffolded.
 From empty repository to authenticated query results over Arrow Flight SQL in one day. The
@@ -665,6 +665,6 @@ protocol was not the hard part. Polaris credential vending was the hard part. Th
 just worked.
 :::
 
-::: {.ailog}
+:::
 **AI Logbook:** The AI implemented all 24 `FlightSqlService` trait methods, including the metadata surface for catalogs, schemas, tables, and XDBC type info, across two sessions. The human decided which methods to implement and which to leave as `Unimplemented` (Substrait, transactions). The `do_get_fallback` handler that turned out to be the actual path JDBC clients use was discovered during the first DBeaver test by the human; the AI had implemented the standard `do_get_statement` path first, which no real client hit.
 :::

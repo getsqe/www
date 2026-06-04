@@ -1,4 +1,4 @@
-# The DuckDB Drift {#sec:duckdb-drift}
+# The DuckDB Drift
 
 > The shape of an engine is not what it was designed to do.
 > It is what users actually paste into the prompt.

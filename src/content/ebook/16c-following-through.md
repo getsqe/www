@@ -1,4 +1,4 @@
-# Following Through {#sec:punchlist}
+# Following Through
 
 > A punch list works when you treat it like a contract.
 > Not when you treat it like a wish.

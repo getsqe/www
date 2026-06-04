@@ -1,4 +1,4 @@
-# Attaching at Runtime {#sec:attach-runtime}
+# Attaching at Runtime
 
 > The catalog list is not a config file.
 > It is a process. The user changes it from SQL.

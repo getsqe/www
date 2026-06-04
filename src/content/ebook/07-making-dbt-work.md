@@ -1,4 +1,4 @@
-# Making dbt Work {#sec:dbt}
+# Making dbt Work
 
 > dbt doesn't care about your architecture. It cares about list_relations.
 
@@ -107,7 +107,7 @@ A faithful Trino wire protocol implementation is a different beast entirely. HTT
 
 The adapter is finished work. The compat layer is ongoing maintenance. We chose the bounded problem.
 
-::: {.fieldreport}
+:::
 **Field report:** dbt's adapter test suite has 47 tests. We passed 43 on the first run. The 4 failures were all about transaction semantics we intentionally don't support -- BEGIN, COMMIT, ROLLBACK. Iceberg provides atomic commits per statement; multi-statement transactions aren't meaningful for our model. Sometimes incompatibility is a feature.
 :::
 
@@ -144,7 +144,7 @@ The other four JDBC tables are dynamic, pulling from the same Polaris catalog da
 
 The payoff: DBeaver's schema browser populated. Tables appeared in the tree. Columns showed their types. Double-clicking a table showed its data. The tool worked because we spoke its language.
 
-::: {.ailog}
+:::
 *[To be completed by AI Logbook agent]*
 :::
 
@@ -221,7 +221,7 @@ The three bugs weren't independent. The file collision only became visible when 
 
 Each fix revealed the next problem. That's how real integration testing works. You can't write a unit test for "what breaks when a dbt analyst writes their first real project against your engine." You can only run the project and read what happens.
 
-::: {.fieldreport}
+:::
 **Field report:** The three fixes together (UUID file naming, 17 Trino function aliases, 27 structured error codes) were roughly 600 lines of Rust. None of them were architecturally interesting. They were all "this thing doesn't work the way the ecosystem expects it to." That's most of what makes an engine usable.
 :::
 

@@ -1,4 +1,4 @@
-# The Catalog Is the API {#sec:catalog}
+# The Catalog Is the API
 
 > Your BI tool doesn't read your code. It reads your catalog.
 > Make it worth reading.
@@ -69,7 +69,7 @@ impl SchemaProvider for InformationSchemaProvider {
 
 Each `build_*` method calls Polaris through the `SessionCatalog` -- which carries the user's bearer token -- lists namespaces and tables, and assembles the results into Arrow `RecordBatch` instances wrapped in a `MemTable`. The table is ephemeral: it's constructed fresh for each query, reflecting the current state of the catalog at that moment.
 
-::: {.datafusion}
+:::
 **DataFusion deep dive:** DataFusion's `SchemaProvider` trait is async on the `table()` method
 but sync on `table_names()`. This forced a design choice: we use `tokio::task::block_in_place`
 in `table_names()` to bridge async catalog calls into the synchronous context. For
@@ -201,7 +201,7 @@ The tasks table shows execution at the fragment level. In single-node mode, each
 
 The nodes table is simpler: one row for the coordinator, one row per worker. `env!("CARGO_PKG_VERSION")` pulls the version from `Cargo.toml` at compile time. The `coordinator` boolean column lets you filter nodes by role. This is the same information you'd get from a Kubernetes service endpoint list, but queryable from SQL.
 
-::: {.fieldreport}
+:::
 **Field report:** The tasks table caught a real bug. During the load test with 50 concurrent clients, we noticed some queries showing tasks on `http://worker-1:50052` that should have gone to `worker-2`. The tasks table made it visible: the fragment scheduler was hashing partition IDs to workers using a scheme that collided on certain partition ranges. We fixed the hash function, and the tasks table confirmed even distribution in the next test run. The tool that monitors the engine found the bug in the engine.
 :::
 
@@ -243,7 +243,7 @@ The wrapping strategy extends to custom SQL we added later. `EXPLAIN FULL` is ou
 
 The `StatementKind` enum grew to 18 variants as features were added. The classifier has 30 test cases covering every variant, including edge cases like `CREATE OR REPLACE TABLE AS SELECT` (classified as CTAS, not CreateTable) and `ALTER TABLE RENAME COLUMN` (classified as Utility, not Rename). One thing the classifier makes explicit: the boundary between statements that go through DataFusion's planner and statements that bypass it. Queries, CTAS, INSERT, MERGE, DELETE, and EXPLAIN go through the full planning pipeline. SHOW commands, DROP, RENAME, CREATE SCHEMA, and DROP SCHEMA go directly to catalog operations. This routing decision happens once, early, and drives the rest of the execution path.
 
-::: {.devto}
+:::
 **dev.to connection:** The parser extension pattern follows the same principle described in "When Your SQL Engine Understands Meaning": wrap, don't fork. A forked parser is a maintenance burden that compounds over time. A wrapper that intercepts specific patterns before the standard parser runs is cheap to maintain and easy to test.
 :::
 

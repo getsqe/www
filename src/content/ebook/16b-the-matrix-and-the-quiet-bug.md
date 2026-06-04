@@ -1,4 +1,4 @@
-# The Matrix and the Quiet Bug {#sec:matrix}
+# The Matrix and the Quiet Bug
 
 > The benchmark says you are fast.
 > The matrix says what you actually do.

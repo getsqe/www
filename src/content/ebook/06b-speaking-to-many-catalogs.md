@@ -1,4 +1,4 @@
-# Speaking to Many Catalogs {#sec:multi-catalog}
+# Speaking to Many Catalogs
 
 > The catalog is the API. But which catalog?
 > The operator picks. The engine connects.

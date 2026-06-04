@@ -63,7 +63,7 @@ state.
 | `SELECT * EXCLUDE (col)` | works (DataFusion 53 native) | **done** (documented in V9) |
 | `SELECT * REPLACE (expr AS col)` | works (DataFusion 53 native) | **done** (documented in V9) |
 | `FROM tbl SELECT ...` (FROM-first) | missing | not planned (DataFusion parser does not support) |
-| Struct / list / map literals (`{a: 1}`, `[1, 2]`, `MAP {...}`) | partial (nested types work, syntax less ergonomic) | not planned |
+| Struct / list / map literals (`{a: 1}`, `[1, 2]`, `MAP`) | partial (nested types work, syntax less ergonomic) | not planned |
 | List comprehensions, lambdas | missing | not planned (DataFusion does not support) |
 | `PIVOT` / `UNPIVOT` | missing | not planned (DataFusion does not support) |
 | `QUALIFY` | missing | not planned (DataFusion does not support) |

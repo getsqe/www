@@ -1,4 +1,4 @@
-# Why Distribute at All {#sec:distributed-why}
+# Why Distribute at All
 
 > The fastest distributed query is the one that runs on a single node.
 
@@ -17,7 +17,7 @@ This is the part of the story where many teams make their first mistake. The eng
 
 We almost did this. The architecture docs from week one included distributed execution in Phase 3. The temptation was real. But we had a rule: measure first.
 
-::: {.antipattern}
+:::
 **Antipattern: Distributed by Default.** "We might need to scale" is not a requirement. "We're scanning 500GB per query across 200 partitions" is. Start single-node. Measure. Then decide. The operational cost of distribution is not zero, and you pay it on every query, even the ones that would have been faster without it.
 :::
 
@@ -230,7 +230,7 @@ Each guard clause returns the original plan unchanged. The coordinator doesn't k
 
 This design means you can start with a single `sqe-server` binary, no workers, no cluster, no Kubernetes. When the data grows past the crossover point, you add workers. The coordinator discovers them through heartbeats, starts distributing scan work, and everything else stays the same. The SQL is the same. The Flight SQL connection is the same. The auth flow is the same. The policy enforcement is the same.
 
-::: {.sovereignty}
+:::
 **Sovereignty principle:** Distribution should be an operational decision, not an architectural one. The same engine, the same binary, the same config format. You add capacity by adding workers, not by migrating to a different system. The sovereignty thesis applies to your own infrastructure too -- you shouldn't be locked into a deployment model.
 :::
 
@@ -249,7 +249,7 @@ The `try_distribute` method has five guard clauses, and each one was added becau
 
 **Multiple scan nodes.** A query with a join between two Iceberg tables has two `IcebergScanExec` nodes. Distributing both requires coordinating which worker gets which files from which table, and the shuffle between the join sides is expensive. We haven't built this yet. When we detect multiple scan nodes, we fall back to local execution. The comment in the code says "joins -- not yet supported." Honest beats ambitious.
 
-::: {.fieldreport}
+:::
 **Field report:** The "fewer files than workers" guard was the last one we added. We discovered it during TPC-H scale factor 0.01, where some tables have a single Parquet file. The coordinator was dutifully serializing a scan task, sending it to a worker over gRPC, waiting for the result -- and the entire round trip took longer than just reading the file locally. The fix was one comparison: `if total_files < num_workers { return plan; }`.
 :::
 
@@ -358,6 +358,6 @@ We measured. We found the crossover point. We built the mode toggle so the same 
 
 The fastest distributed query is the one that runs on a single node. Don't distribute until you must. And when you must, the next three chapters will show you how.
 
-::: {.ailog}
+:::
 **AI Logbook:** The AI implemented `try_distribute` with its five guard clauses and the `split_files` round-robin function in one pass. The human ran TPC-H at increasing scale factors to find the crossover point where distribution pays for itself: 30-50GB of scanned data on our hardware. The "fewer files than workers" guard clause was the last one added, after the human observed that distributing a single-file scan at scale factor 0.01 was slower than reading it locally. The AI never questioned whether distribution was needed; the human had to measure first.
 :::

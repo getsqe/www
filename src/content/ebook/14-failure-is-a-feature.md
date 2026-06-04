@@ -1,4 +1,4 @@
-# Failure Is a Feature {#sec:failure}
+# Failure Is a Feature
 
 > The question is not whether workers will fail.
 > The question is what happens to the query when they do.
@@ -683,7 +683,7 @@ We accepted four:
 - Very large shuffle -> single-worker bottleneck on final aggregation (acceptable for our workload)
 - Cold worker startup -> first query on a new worker is slow (JIT compilation, cache warming)
 
-::: {.deadend}
+:::
 **Dead end: stateful coordinator failover.** We explored replicating coordinator session state
 to a standby. The complexity was enormous -- distributed consensus for query state, exactly
 what we were trying to avoid by building on DataFusion. We accepted coordinator crash as a
@@ -713,7 +713,7 @@ Here are the patterns we implemented, drawn from the failures above:
 
 **Structured tracing for failure diagnosis.** Every recovery path in the system uses `tracing` structured fields -- `fragment_id`, `worker_url`, `attempt`, `elapsed_ms`. When a fragment fails on worker-1, retries on worker-2, and succeeds, the trace shows the full story. When it fails everywhere and falls back to local execution, the trace shows exactly which workers were tried and what errors each returned. Without structured tracing, debugging distributed failures is archaeology. With it, it's reading a log.
 
-::: {.datafusion}
+:::
 **DataFusion deep dive:** `FairSpillPool` is one of several memory pool implementations
 in DataFusion. `GreedyMemoryPool` gives each operator as much memory as it asks for
 until the pool is exhausted -- first come, first served. `FairSpillPool` divides memory
@@ -879,13 +879,13 @@ There is a temptation in engineering to call a system "done" when the happy path
 
 We now run the concurrent test as part of our pre-merge checks. Ten clients, mixed mode. It catches regressions in connection handling, schema propagation, and memory management before they reach the distributed stack. It doesn't catch everything -- you'd need hundreds of concurrent clients to reproduce the S3 throttle -- but it catches the failures that appear first.
 
-::: {.fieldreport}
+:::
 **Field report:** The final load test run, after all fixes: 50 concurrent clients, mixed mode,
 all 50 passed. Wall time 14.2 seconds. Per-query average 7.8 seconds (including two 200K-row
 full table scans). Throughput 3.5 queries per second. Not fast by benchmarking standards. But
 every single query returned the correct result. That's the point.
 :::
 
-::: {.ailog}
+:::
 **AI Logbook:** The AI generated the step-by-step tracing instrumentation that diagnosed the gRPC stream accumulation hang, wrapping every Flight call with timing logs until the hang point was isolated. The human diagnosed the root cause (HTTP/2 stream state accumulation on a reused connection) from those logs. The `FlightSqlBenchClient` with fresh-connection-per-query, the `tokio::select!` deadline pattern, the fragment retry logic with `failed_workers` exclusion list, and the `FairSpillPool` memory management were all AI-implemented from failure descriptions the human wrote after the 50-client load test broke everything.
 :::

@@ -1,4 +1,4 @@
-# The Engine You Already Have {#sec:datafusion}
+# The Engine You Already Have
 
 > Every query engine is a library pretending to be a service.
 > DataFusion drops the pretence.
@@ -116,7 +116,7 @@ async fn execute_query(
 
 That is the entire query pipeline. SQL string in, Arrow record batches out. Between those two points, DataFusion handles parsing, logical planning, optimization, physical planning, and execution. SQE inserts itself at two points: policy enforcement (between logical planning and optimization) and distribution (between physical planning and execution). Everything else is DataFusion.
 
-::: {.datafusion}
+:::
 **DataFusion deep dive:** DataFusion 52 ships with over 100 optimizer rules, including
 predicate pushdown, projection pushdown, common subexpression elimination, constant folding,
 filter rewriting, join reordering, and limit pushdown. Each rule implements `OptimizerRule`
@@ -288,7 +288,7 @@ The `scan()` method is where DataFusion meets Iceberg. DataFusion passes down th
 
 Each layer does exactly one thing. The catalog knows what exists. The schema knows what's in a namespace. The table knows how to scan data. DataFusion orchestrates them. SQE provides the implementations. The user's identity flows through all of it.
 
-::: {.datafusion}
+:::
 **DataFusion deep dive:** The `CatalogProvider` -> `SchemaProvider` -> `TableProvider` hierarchy
 is DataFusion's primary extension point for data sources. Implementing these three traits is
 how you teach DataFusion to read from anything -- Iceberg, Delta Lake, Hudi, a REST API,
@@ -364,7 +364,7 @@ The choice of Rust was not ideological. It was practical.
 
 **AI agents write Rust well.** This is an observation, not a hypothesis. Rust code is dense and expressive -- a function signature often tells you what the function does, what it takes, what it returns, and what can go wrong. The borrow checker catches the mistakes that would be runtime bugs in other languages. When an AI generates Rust code that compiles, it is very likely correct. When it generates code that doesn't compile, the error messages are specific enough to guide the fix. We built SQE in 15 days. The AI wrote most of the implementation. The human made the architectural decisions and reviewed every commit. That ratio -- AI implements, human decides -- works because Rust's type system catches the implementation bugs that a human reviewer would miss.
 
-::: {.antipattern}
+:::
 **Antipattern: choosing Rust for the wrong reasons.** Rust is not the right choice because
 it's fast. It's fast, but that's a side effect. Rust is the right choice for SQE because
 the Arrow ecosystem is Rust-native, because the type system prevents the class of bugs
@@ -410,7 +410,7 @@ strip = true                    # Smaller binary
 
 The honest trade-off: you pay compile time upfront, and you save debugging time in production. A null pointer in C++ crashes at 3am. A race condition in Java shows up under load. In Rust, these bugs don't exist -- the compiler rejected them at build time. The question is whether you'd rather wait 30 seconds for the compiler or spend four hours debugging a production incident. At scale, this cost compounds in both directions. Plan for it from day one.
 
-::: {.fieldreport}
+:::
 **Field report:** Our CI build went from 4 minutes to 18 minutes when we added the distributed
 execution crates. The fix wasn't faster hardware -- it was splitting the workspace into
 feature-gated crates so you only compile what you're changing. `profile.dev` tuning
@@ -429,7 +429,7 @@ DuckDB is an extraordinary piece of engineering. It is the SQLite of analytics -
 
 I wrote about DuckDB with Iceberg in 2025 -- querying S3 tables via the Iceberg REST API. It worked beautifully for single-user exploration. The query latency was lower than anything else I'd tested. The developer experience was outstanding.
 
-::: {.devto}
+:::
 **dev.to connection:** "DuckDB S3 Tables with Iceberg using Iceberg Rest API" (2025) -- this article
 explored DuckDB's Iceberg extension for single-user analytics. The performance was
 excellent. The limitation was the one we couldn't work around: single-user, single-process.
@@ -521,7 +521,7 @@ iceberg-catalog-rest = { git = "https://github.com/risingwavelabs/iceberg-rust.g
 
 DataFusion 52, Arrow 57, Iceberg 0.9. Three version numbers that represent tens of thousands of hours of engineering by communities we will never have to hire. The SQL parsing, the columnar memory layout, the table format are all solved problems. SQE's contribution is the glue: how these pieces fit together under a sovereign auth model.
 
-::: {.antipattern}
+:::
 **Antipattern: reimplementing what DataFusion already does.** The temptation is strong.
 You see how DataFusion's CSV reader works and think "I could write a better one for my
 use case." Maybe. But now you maintain a CSV reader, and you miss every bug fix and
@@ -548,7 +548,7 @@ This separation is what makes sovereignty possible. You can swap Polaris for Gra
 
 And here is the part that matters for multi-tenancy: because the layers are separate, you can configure them differently per user. Alice's catalog view might show different namespaces than Bob's. Alice's storage credentials are scoped to Alice's permissions. Alice's compute might have different memory limits. All within the same engine, the same process, the same binary. The separation is what makes per-user isolation a configuration problem rather than an architecture problem.
 
-::: {.sovereignty}
+:::
 **Sovereignty principle:** The separation of catalog, storage, and compute is not an
 architectural nicety. It is the mechanism of sovereignty. When these three layers are
 coupled, you are locked to whatever product couples them. When they are separate, you
@@ -584,11 +584,11 @@ We forked the fork. Applied the same API migration that upstream PR #2206 docume
 
 The result: TPC-DS dropped from 19.3 seconds to 12.2 seconds. TPC-H from 1.8 to 1.1. Every suite faster. The upgrade was mechanical. The decision to stop waiting and do it ourselves was not.
 
-::: {.sovereignty}
+:::
 **Sovereignty principle:** When your critical dependency is a fork of a fork, you have two choices: wait for someone else to maintain your supply chain, or own it. We chose to own it. The vendored fork is 4.6 MB. The maintenance burden is one rebase per upstream release. The alternative -- staying on DF 52 indefinitely -- would have left us without hash join dynamic filters, LIMIT-aware pruning, and a year of optimizer improvements. Dependencies are sovereignty decisions.
 :::
 
-::: {.fieldreport}
+:::
 **Field report:** The first integration test -- authenticate via OIDC, query an Iceberg table
 through Polaris, receive Arrow batches over Flight SQL -- passed on March 14, 2025. The same
 day we scaffolded the crate structure. DataFusion handled the SQL parsing, logical planning,
@@ -598,6 +598,6 @@ to Polaris to S3 to the user. The test passed. It took less than a day.
 That was the moment we knew the library approach would work.
 :::
 
-::: {.ailog}
+:::
 **AI Logbook:** The AI scaffolded all six initial crates and implemented the `execute_query` pipeline (from SQL string to Arrow record batches) in a single session. The human made the decision to use DataFusion as a library rather than Trino, Spark, or DuckDB, after two years of maintaining a Trino fork. The `create_session_context` method. one `SessionContext` per user with per-session credentials. was specified by the human as the architectural constraint; the AI implemented it correctly because Rust's ownership model made the isolation boundaries explicit in the type signatures.
 :::

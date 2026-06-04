@@ -1,4 +1,4 @@
-# What You Can't See Can't Hurt You {#sec:security}
+# What You Can't See Can't Hurt You
 
 > Security is not a feature. It's a rewrite of the query plan.
 
@@ -19,7 +19,7 @@ We considered this for about ten minutes.
 
 The problem is that SQL is compositional. Users write subqueries, CTEs, joins, aggregations, window functions. A filter appended to a simple `SELECT * FROM employees` is straightforward. A filter injected into a four-way join with a correlated subquery and a `HAVING` clause is a parsing nightmare. String manipulation of SQL is how injection vulnerabilities happen. It's also how subtle semantic bugs happen -- the kind where the filter works for most queries but silently fails on a specific join pattern that nobody tested.
 
-::: {.antipattern}
+:::
 **Antipattern: SQL string manipulation for security.** Appending `AND region = 'EU'` to the SQL string before execution seems simple. It breaks on UNION queries, subqueries, CTEs, and any query where the table alias doesn't match. Worse, a carefully crafted query can escape the filter. If your security depends on string manipulation, your security depends on the attacker not being creative.
 :::
 
@@ -82,7 +82,7 @@ Because we inject the mask as an expression that wraps the column reference, the
 
 **Property 3: Denied columns don't exist.** If the policy says Alice can't see the `salary` column, the plan rewriter removes it from the schema entirely. When Alice runs `SELECT *`, `salary` isn't in the projection. When Alice runs `SELECT salary`, she gets "column not found" -- the same error she'd get for a column that genuinely doesn't exist in the table. There is no way for Alice to distinguish "this column exists but I'm denied access" from "this column doesn't exist."
 
-::: {.sovereignty}
+:::
 **Sovereignty principle:** Deny by omission, not by error. If your security system tells the user "access denied to column salary," you've just told them the column exists. In a sovereign engine, denied columns are invisible. The user sees exactly the schema they're authorized to see -- no more, no less. This is the same model PostgreSQL uses for RLS, and it exists for the same reason: the absence of information is itself a form of security.
 :::
 
@@ -206,7 +206,7 @@ let logical_str = format!("{}", enforced.display_indent());
 
 This means EXPLAIN shows the secured plan. If a row filter is active, the user sees the filter node in the EXPLAIN output. This is a conscious choice. The alternative -- hiding the security nodes from EXPLAIN -- would make debugging impossible for both users and administrators.
 
-::: {.datafusion}
+:::
 **DataFusion deep dive:** The `LogicalPlan::transform_down` method is the workhorse of plan rewriting. It visits each node top-down and lets you return `Transformed::yes(new_node)` to replace a node or `Transformed::no(node)` to keep it. The method handles rebuilding the tree with correct parent-child relationships. For row filter injection, we match on `LogicalPlan::TableScan`, wrap it in a `LogicalPlan::Filter`, and return the filter as the replacement. DataFusion's optimizer then treats this injected filter identically to any user-written filter.
 :::
 
@@ -293,7 +293,7 @@ fn mask_expression(col: &Column, mask: &MaskType) -> Expr {
 
 The critical point: these expressions replace the column reference in the plan. When the optimizer sees `sha256(cast(ssn as varchar))` in a projection, it doesn't know (or care) that `ssn` was the original column. If a user predicate references `ssn`, the optimizer can only match it against the expression, not the raw column. The mask is structural -- it exists in the plan tree, not as a post-processing step.
 
-::: {.fieldreport}
+:::
 **Field report: The predicate pushdown test.** When we designed the mask system, the first thing we wrote was a test: create a plan with a masked column, add a user predicate on that column, run the optimizer, and verify the predicate doesn't push below the mask. The test passed on the first run because DataFusion's optimizer is expression-aware -- it won't push a predicate through a function call boundary. We didn't need to write a custom optimizer rule to prevent this. The plan structure prevented it. That's when we knew the approach was sound.
 :::
 
@@ -562,7 +562,7 @@ By placing masks in the plan as expressions, the optimizer's own rules prevent t
 
 Row filters, by contrast, are safe to push through. If the policy says `region = 'EU'` and Alice writes `department = 'engineering'`, pushing Alice's predicate below the row filter is fine -- it just means fewer rows are scanned. The security invariant (only EU rows are visible) is maintained because Alice's predicate can only narrow, never widen.
 
-::: {.datafusion}
+:::
 **DataFusion deep dive:** DataFusion's `PushDownFilter` optimization rule walks the plan tree looking for `Filter` nodes whose predicates can be pushed closer to the data source. The rule respects expression boundaries -- it won't push a predicate through a `Projection` that transforms the referenced column. This is the mechanism that protects masked columns. The mask expression (e.g., `floor(salary/10000)*10000`) creates a new expression that the filter references. The optimizer sees this as a different expression from the raw `salary` column and won't push the predicate below the projection. No custom rule needed.
 :::
 
@@ -602,6 +602,6 @@ This model has three properties worth carrying to other systems. First, deny by 
 
 The `PolicyEnforcer` trait is twenty-six lines of Rust. The plan rewriting that implements it will be several hundred. The security properties it guarantees come not from the amount of code, but from where it sits in the pipeline: after parsing, before optimization. That placement is the entire design.
 
-::: {.ailog}
+:::
 **AI Logbook:** The AI produced the `PolicyEnforcer` trait, `PassthroughEnforcer`, and the `PolicyPlanRewriter` with `transform_down` in three passes. The first pass applied masks and restrictions as independent projections; the second projection discarded the first's mask expressions. The human caught this during code review and restructured the prompt to require a single-pass projection. The security property that masks block predicate pushdown was verified by the human's first test; it passed because DataFusion's optimizer respects expression boundaries, not because we wrote a custom rule.
 :::

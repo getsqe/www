@@ -1,4 +1,4 @@
-# Preface: The Sovereignty Thesis {#sec:preface}
+# Preface: The Sovereignty Thesis
 
 > "The general who wins a battle makes many calculations in his temple
 > before the battle is fought. The general who loses a battle makes
@@ -57,7 +57,7 @@ A sovereign engine that only works in one environment isn't sovereign. It's just
 
 ## What Sovereignty Means
 
-::: {.sovereignty}
+:::
 Sovereignty, in the context of data infrastructure, is a precise claim: every component in the pipeline runs under your control, with your policies, using credentials that trace back to an individual human. No shared secrets. No ambient authority. No "the engine has access to everything and we trust it to enforce the rules."
 :::
 

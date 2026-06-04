@@ -22,7 +22,7 @@ function titleFromId(id: string) {
 }
 function chapterTitle(entry: { id: string; body?: string }) {
   const m = entry.body?.match(/^#\s+(.+)$/m);
-  return m ? m[1].replace(/[*_`]/g, '').trim() : titleFromId(entry.id);
+  return m ? m[1].replace(/\s*\{[#.][^}]*\}/g, '').replace(/[*_`]/g, '').trim() : titleFromId(entry.id);
 }
 function chapterNumber(id: string) {
   const m = id.match(/^(\d+[a-z]?)/);

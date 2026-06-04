@@ -1,4 +1,4 @@
-# Tables Made of Files {#sec:iceberg}
+# Tables Made of Files
 
 > An Iceberg table is not a table. It is a versioned filesystem
 > with opinions about schema.
@@ -37,7 +37,7 @@ metadata.json
 
 The tree is small. A table with 10,000 data files might have 10 manifests, one manifest list, and one metadata file. The metadata is typically a few megabytes. The data files might be terabytes. You read megabytes of metadata to decide which terabytes of data to skip.
 
-::: {.iceberg}
+:::
 **Iceberg deep dive:** The manifest-list-to-manifest-to-data-file hierarchy is not decorative.
 Each level provides progressive filtering. The manifest list filters by partition summary
 (skip entire partitions). The manifest filters by column statistics (skip individual files
@@ -83,7 +83,7 @@ Partition evolution is the feature that convinced me Iceberg was the right table
 
 Before writing a single line of Rust for SQE, I spent months working with Iceberg through Python. The experiments are documented on dev.to, and they shaped the design of everything that came after.
 
-::: {.devto}
+:::
 **dev.to connection:** "Glue Iceberg Rest Api and PyIceberg" and "Duckberg!". These articles
 trace the path from first discovering the Iceberg REST protocol to understanding what it
 actually takes to query Iceberg tables from code you control.
@@ -117,7 +117,7 @@ The second experiment bridged two catalogs. Unity Catalog (Databricks) had also 
 
 The third experiment was DuckDB with Iceberg. DuckDB's `iceberg` extension could read Iceberg tables from S3, and combined with a REST catalog, you had a zero-infrastructure query engine for Iceberg. No cluster. No coordinator. Just a binary and a catalog URL.
 
-::: {.devto}
+:::
 **dev.to connection:** "DuckDB S3 Tables with Iceberg using Iceberg Rest API". The article
 where it clicked that the catalog is the only coordination point. If you control the catalog,
 you control access. Everything else is just reading files.
@@ -136,7 +136,7 @@ Third, the path from "can read Iceberg tables" to "is a query engine" is longer 
 
 When we decided to build SQE in Rust, the Iceberg library choice was straightforward. There is one: iceberg-rust, the official Apache Iceberg implementation for Rust. At the time we started, it was at version 0.8. By the time we reached production integration tests, it was at 0.9. The version delta matters: 0.9 changed the catalog builder API significantly.
 
-::: {.iceberg}
+:::
 **Iceberg deep dive:** The workspace Cargo.toml pins specific iceberg-rust dependencies:
 
 ```toml
@@ -197,7 +197,7 @@ We cached namespace lists at catalog provider construction time to avoid hitting
 
 **Credential vending differences between Polaris versions.** When the engine loads a table from Polaris, the REST response includes a `config` section that may contain vended S3 credentials, temporary access keys scoped to that specific table. Polaris 0.9 and Polaris 1.0 return these credentials with different property keys and different expiry formats.
 
-::: {.fieldreport}
+:::
 **Field report:** The day we discovered that Polaris returns different `file-io` properties
 depending on whether you're running Polaris 0.9 or 1.0. The fix was three lines.
 The debugging was three days. The credential extraction code now tries RFC3339
@@ -225,7 +225,7 @@ let catalog = RestCatalogBuilder::default()
 
 The `with_storage_factory` call is required for write operations; without it, `CREATE TABLE` and `INSERT INTO` fail because iceberg-rust does not know how to write to S3. This was not documented at the time. We found it by reading the iceberg-rust source.
 
-::: {.deadend}
+:::
 **Dead end: iceberg-datafusion's built-in IcebergTableProvider.** The `iceberg-datafusion`
 crate provides its own `IcebergTableProvider` that bridges Iceberg tables to DataFusion.
 We tried using it directly. The problem: it constructs its own catalog session internally,
@@ -276,7 +276,7 @@ pub async fn try_new(table: Table) -> Result<Self> {
 
 The critical method is `supports_filters_pushdown`. We return `Inexact` for every filter we can convert to an Iceberg predicate, and `Unsupported` for the rest. `Inexact` means "I will apply this filter during the scan, but I might not filter every row, so DataFusion must still evaluate the filter after scanning." This is correct because Iceberg predicate pushdown prunes manifests and Parquet row groups, but it does not guarantee per-row filtering for all expression types.
 
-::: {.datafusion}
+:::
 **DataFusion deep dive:** The `Inexact` vs `Exact` distinction matters. If you return `Exact`,
 DataFusion removes the filter from the plan; it trusts that the table provider handled it
 completely. If you return `Inexact`, DataFusion keeps the filter as a post-scan filter node.
@@ -376,7 +376,7 @@ User authenticates -> SessionCatalog (with bearer token)
 
 Every link in this chain carries the user's identity. The `SessionCatalog` holds the bearer token. When it loads a table, Polaris validates the token and returns metadata only if the user has access. The vended S3 credentials in the table response are scoped to that user's permissions. The scan reads Parquet files using those scoped credentials. At no point does the engine use a service account.
 
-::: {.sovereignty}
+:::
 **Sovereignty principle:** The catalog-to-scan credential chain is unbroken. The user's bearer
 token flows from authentication through catalog resolution to storage I/O. If the user
 does not have access to a table in Polaris, they cannot see it in namespace listings.
@@ -449,7 +449,7 @@ When the `SqeSchemaProvider` resolves a table name, it first tries to load it as
 
 This is a workaround, not a solution. When iceberg-rust adds native view support, we will migrate to it. But the workaround is complete (views work for SELECT, for joins, for nested views) and it ships.
 
-::: {.deadend}
+:::
 **Dead end: waiting for iceberg-rust view support.** We considered waiting. The iceberg-rust
 project had view support on its roadmap. But "on the roadmap" and "in a released version"
 are different things. We needed views for dbt compatibility. We built the REST workaround
@@ -488,6 +488,6 @@ iceberg-rust made this real in Rust: a scan planner that prunes intelligently, a
 
 The bridge was about 1,200 lines of Rust across six files. That is all it takes to connect a query engine to the entire Iceberg ecosystem. The ratio matters. We wrote the initial catalog integration in about 1,200 lines. We got access to every table, in every namespace, in every catalog that speaks the Iceberg REST protocol.
 
-::: {.ailog}
+:::
 **AI Logbook:** The AI implemented `SqeTableProvider`, `SqeCatalogProvider`, `IcebergScanExec`, and the predicate translation module, including the subtle AND-vs-OR partial pushdown asymmetry, from a design doc that described the DataFusion trait interfaces. The human specified the `Inexact` vs `Exact` pushdown semantics and the security implication of getting them wrong. The `stream::once().try_flatten()` pattern for deferring async scan initialization inside a synchronous `execute()` method was the AI's solution; it worked on the first attempt.
 :::

@@ -1,4 +1,4 @@
-# Standing on Ballista's Shoulders {#sec:ballista}
+# Standing on Ballista's Shoulders
 
 > Don't build a distributed scheduler from scratch.
 > Build on one that already works, then make it yours.
@@ -24,7 +24,7 @@ Plugging Ballista in as-is would mean either duplicating all that work (running 
 
 We tried the first approach for about a day. The coordinator would plan the query, enforce policy, produce a physical plan, then hand the plan to Ballista's scheduler for distribution. The scheduler would re-plan it. Filters that the policy engine had injected were being rearranged by Ballista's optimiser pass. Column masks that were carefully positioned to block predicate pushdown were getting pushed down anyway.
 
-::: {.deadend}
+:::
 **Dead end: Ballista as a black box.** We tried wrapping Ballista's scheduler as a backend for SQE's coordinator. The plan went in with policy filters attached. The plan came out with policy filters rearranged. Ballista's internal optimiser pass didn't know that certain filter nodes were security boundaries, not performance hints. Two days of work, and we learned that you can't treat a query planner as a transparent pass-through.
 :::
 
@@ -46,7 +46,7 @@ This is the path we chose. Not a fork in the Git sense -- we didn't clone the Ba
 
 The key insight: Ballista's most valuable contribution isn't its scheduler or its executor process. It's the *pattern*. The idea that a DataFusion physical plan can be serialised to protobuf, sent over the wire, deserialised on a different machine, and executed there with full fidelity. Once you understand that pattern, you can implement it in far fewer lines than Ballista uses, because you only need to serialise the plan nodes *your* engine actually produces.
 
-::: {.antipattern}
+:::
 **Antipattern: the partial fork.** There's a fourth path we didn't mention because it's the one you should never take: clone the repository, delete the parts you don't need, and start modifying what's left. This creates a codebase that looks like yours but inherits Ballista's internal assumptions, naming conventions, and coupling. Every upstream bugfix requires manual cherry-picking across diverged codebases. Every upstream API change requires understanding code you didn't write and only partially understand. A partial fork gives you the maintenance burden of both "build from scratch" and "use a dependency," with the benefits of neither. If you can't use a project's public API, study its architecture and reimplement what you need. Don't inhabit someone else's codebase.
 :::
 
@@ -403,7 +403,7 @@ fn test_roundtrip_distributed_scan_exec() {
 
 This test exists because we learned the hard way that it needed to.
 
-::: {.datafusion}
+:::
 **DataFusion deep dive:** The `PhysicalExtensionCodec` trait is DataFusion's official extension point for plan serialisation. When `datafusion-proto` serialises a physical plan and encounters a node that isn't in its built-in registry, it calls `try_encode` on whatever extension codec was provided. If no codec is registered, serialisation fails. If the codec returns `NotImplemented`, serialisation fails. The extension codec must handle every custom plan node in your engine, or the plan can't leave the coordinator. This is the contract: if you add a custom `ExecutionPlan`, you must teach the codec how to serialise it.
 :::
 
@@ -420,7 +420,7 @@ The problem: when the coordinator plans a `SELECT id, name FROM users`, the phys
 
 The fix was serialising the schema as part of the codec payload. Four lines of encode, four lines of decode, and a base64 wrapper because protobuf bytes inside JSON need encoding. The round-trip test caught this in CI within a day of the codec being written. The lesson: round-trip tests for custom codecs aren't optional. They're the only thing standing between you and silent data corruption.
 
-::: {.fieldreport}
+:::
 **Field report:** The schema projection bug manifested as a `SchemaError` deep inside DataFusion's `ProjectionExec`. The error message said "column index 2 out of bounds for schema with 2 columns." The actual problem was 18 columns upstream where the schema had been lost during serialisation. We spent an afternoon tracing the error before adding the schema to the codec payload. The fix was small. The time to find it was not. After that, we wrote the round-trip test. Every codec change since has been validated by that test before it leaves the developer's machine.
 :::
 
@@ -722,7 +722,7 @@ That's future work. It's also future work that's made easier by the foundation w
 
 The hard part of distributed execution isn't the execution itself. It's the plumbing: serialisation, health monitoring, credential management, plan manipulation. We built that plumbing in twelve days, because Ballista showed us which pipes to lay.
 
-::: {.ailog}
+:::
 **AI Logbook:** The human decided to fork Ballista's ideas rather than use it as-is or build from scratch. The AI implemented the `SqePhysicalCodec`, the `WeightedScheduler`, and the heartbeat protocol in three passes. The plan surgery function (`replace_scan_in_plan`, replacing a scan leaf in a tree while preserving all ancestor nodes) took the AI four attempts before the recursive traversal was correct. The first version replaced the entire plan; the fix was commit `3a123ea`.
 :::
 

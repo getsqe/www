@@ -33,6 +33,20 @@ To re-enable downloads:
 ### Note on the leak gate's guarantee
 The **real** safety guarantee is the gate over the **synced source markdown** (run inside `sync-from-sqe.sh`, returns 0 before any build). The `dist/` scan in CI is a *backstop with known holes*: Shiki splits identifiers across `<span>`s so a contiguous `crates/sqe-` inside a highlighted code block may not match; and the glob skips `.js` and binaries. Treat a clean source scan — not a clean dist scan — as the gate that matters.
 
+## Curated / hand-authored pages (NOT raw-synced)
+- **`src/pages/compare/duckdb.astro`** is curated: it keeps the differentiators, a
+  "DuckDB-inspired, now in SQE" feature resume, and the genuine remaining gaps — dropping the
+  source doc's "done" changelog/roadmap rows. Facts are derived from `src/content/compare/duckdb.md`
+  (still synced + gate-scanned, but no longer rendered raw). **Update this page by hand** when the
+  DuckDB comparison source changes — `npm run sync` will not.
+- **`src/pages/about.astro`** intentionally credits **Schuberg Philis** and the authors
+  (Jacob Verhoeks & Rafael Herrero) and frames the sovereign-data-platform vision — a deliberate
+  divergence from the spec's "no SBP naming" rule, per direct request. SBP naming stays out of the
+  nav/footer *chrome*; it lives in About page content only.
+- The sync sanitizer also strips Pandoc heading attributes (`{#sec:…}`) the ebook chapters carry,
+  since Astro renders them literally. Note: Pandoc cross-reference links (`](#sec:…)`) in chapters
+  point at anchors that don't exist in the web render — a minor read-online limitation.
+
 ## Verified locally (2026-06-04)
 - `astro build` → 31 pages, exit 0.
 - `bash scripts/leak-scan.sh dist` → **0 hits**.

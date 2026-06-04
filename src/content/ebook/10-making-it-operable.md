@@ -1,4 +1,4 @@
-# Making It Operable {#sec:operations}
+# Making It Operable
 
 > A query engine that surprises you is a query engine nobody will trust.
 
@@ -145,7 +145,7 @@ The `query_hash` field deserves explanation. It's a SHA-256 of the normalized SQ
 
 The audit logger is append-only JSONL to a file, with flush-after-every-write to ensure a coordinator crash doesn't lose the last few entries. When no audit log path is configured, the logger is a no-op -- no allocation, no I/O, no lock contention. The `Option` pattern again: zero cost when disabled, full fidelity when enabled.
 
-::: {.sovereignty}
+:::
 **Sovereignty principle:** Audit logging is non-negotiable for sovereign infrastructure. If you can't answer "who queried what, when, and what did they see?" then you don't control your data platform -- you're just hosting it. The audit log is the proof that your access policies are being enforced. Without it, policies are promises.
 :::
 
@@ -166,7 +166,7 @@ Workers have a simpler health model, but the coordination protocol adds its own 
 
 The `sqe_healthy_workers` gauge on the coordinator tracks how many workers are currently healthy. This is the single most important metric for capacity planning. If you have 4 workers and this gauge drops to 2, your scan capacity just halved.
 
-::: {.fieldreport}
+:::
 **Field report:** During distributed docker-compose testing, we initially had the readiness probe checking `/healthz` instead of `/readyz`. The coordinator would accept connections before worker registration completed, which meant the first few queries executed locally instead of distributed. The symptom was confusing: "Why are my distributed queries not distributing?" Because the load balancer started sending traffic before workers were ready.
 :::
 
@@ -192,7 +192,7 @@ That was the moment I understood: configuration isn't a feature you add after th
 
 The Twelve-Factor App methodology calls this "storing config in constants" and lists it under things to stop doing immediately. But knowing the principle and feeling the pain are different things. The pain arrived when we tried to run integration tests in CI against a different stack and realised we'd need conditional compilation just to change an endpoint URL.
 
-::: {.antipattern}
+:::
 **Antipattern: Constants as configuration.** When you hardcode values because "we'll fix it later," you're making a bet that later comes before someone else needs to deploy your software. That bet almost always loses. The first external user showed up two days before we planned to extract the config.
 :::
 
@@ -396,7 +396,7 @@ The Twelve-Factor App methodology was written for web services. A query engine i
 
 SQE builds as a single binary -- `sqe-server` -- that runs as either coordinator or worker based on a `--mode` flag, an `SQE_MODE` environment variable, or a config key. Both modes share the same config file structure. A coordinator ignores the `[worker]` section. A worker ignores `[coordinator].worker_urls`. In Kubernetes, the same ConfigMap is mounted to both coordinator and worker pods. The only difference is the `SQE_MODE` environment variable. Same image, same config, different mode. One config surface to understand.
 
-::: {.ailog}
+:::
 *[To be completed by AI Logbook agent]*
 :::
 
@@ -603,7 +603,7 @@ We fixed all 43. Thirty-three files changed. +1,272 / -372 lines. Every unit tes
 
 The audit doc lives at `docs/issues.md`. It lists every finding by severity, with file:line references, what was wrong, how it was fixed, and why it matters. The document is not a badge. It is a maintenance artifact. When someone changes the session cache or the auth chain or the sort logic, they can check the audit doc to understand why the code looks the way it does.
 
-::: {.sovereignty}
+:::
 **Sovereignty principle:** A production security audit is not optional for sovereign infrastructure. If you skip it, you are deploying hope. The 43 findings were not surprising. They are the normal output of building software quickly and then reviewing it carefully. The difference between a prototype and a production system is not the code. It is the review.
 :::
 

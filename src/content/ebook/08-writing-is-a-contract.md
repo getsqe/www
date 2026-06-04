@@ -1,4 +1,4 @@
-# Writing Is a Contract {#sec:writes}
+# Writing Is a Contract
 
 > Reading is easy. Writing is where table formats earn their keep.
 
@@ -17,7 +17,7 @@ Before any code, the mental model. Iceberg's write protocol has three stages, an
 
 **Stage 3: Atomicity guarantee.** If the commit fails -- because another writer committed first, because the table was dropped, because the network died -- the data files from Stage 1 are garbage. They sit in S3 until someone cleans them up. No reader will ever see them. This is by design.
 
-::: {.iceberg}
+:::
 **Iceberg deep dive:** Iceberg's snapshot isolation is implemented through the catalog, not through
 storage. S3 historically had no compare-and-swap (though AWS added conditional puts via `If-None-Match`
 in August 2024). The catalog provides the atomic swap: it replaces the metadata pointer only if
@@ -106,7 +106,7 @@ The `stamp_field_ids` function becomes critical here. For CTAS, we control the s
 
 The same code path also handles Flight SQL's DoPut ingest, where a client streams Arrow batches directly via the Flight protocol instead of sending SQL. Three write entry points -- CTAS, INSERT, DoPut ingest -- all converging on the same `write_data_files_streaming` and `Transaction::fast_append` primitives. One code path for producing Parquet files, one for committing them, regardless of how the data arrived.
 
-::: {.deadend}
+:::
 **Dead end: letting DataFusion handle the full INSERT.** DataFusion has its own `InsertExec`
 plan node. We considered routing INSERT INTO through DataFusion's built-in write path rather
 than extracting the SELECT and handling the Iceberg commit ourselves. DataFusion's `InsertExec`
@@ -233,6 +233,6 @@ The write path is where a query engine stops being a toy and starts being infras
 
 We paid that price. And then we moved on to the next problem: making sure users cannot write data they should not be able to see.
 
-::: {.ailog}
+:::
 **AI Logbook:** The AI implemented CTAS, INSERT INTO, and the `stamp_field_ids` function that assigns sequential Parquet field IDs to Arrow schemas. The timestamp precision bug (`Timestamp(Nanosecond, None)` vs `Timestamp(Microsecond, None)` displaying identically in Arrow's formatter) took four hours of human debugging before the AI was told to add `Debug`-level type logging. The fix was one line of casting. The nullable flag scanner that checks all batches (not just the first) was the human's idea after a UNION ALL crash; the AI implemented it in one pass.
 :::

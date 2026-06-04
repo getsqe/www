@@ -1,4 +1,4 @@
-# Deploying Sovereignty {#sec:deployment}
+# Deploying Sovereignty
 
 > A sovereign engine that's hard to deploy
 > is just a sovereign engine that nobody runs.
@@ -119,7 +119,7 @@ From 2.3GB to 47MB. A 98% reduction. Cold pulls on a Kubernetes node take 3 seco
 
 We use `debian:bookworm-slim` instead of `scratch` for the runtime. The original plan was a fully static musl build running on scratch: zero runtime dependencies, zero attack surface. In practice, the Rust TLS ecosystem still has rough edges with musl static linking. OpenSSL bindings, which iceberg-rust pulls in transitively, resist static compilation on some architectures. The bookworm-slim base adds 25MB but eliminates a class of linking headaches that were consuming more debugging time than the size savings justified.
 
-::: {.antipattern}
+:::
 **Antipattern: scratch images for Rust services that use OpenSSL.** It sounds clean: no base OS, just your binary. But if any dependency in your tree links dynamically against libssl, the binary will fail with a cryptic "not found" error at startup. Either commit to rustls throughout your entire dependency tree, or accept the slim base. We chose the latter and moved on.
 :::
 
@@ -246,7 +246,7 @@ The coordinator gets modest CPU (500m request, 2 cores limit) and moderate memor
 
 Workers get more of everything. The 1 core request ensures they are scheduled on nodes with real compute capacity, not squeezed onto a node that is already running 30 sidecar containers. The 4-core limit lets them burst for heavy scans. The 8Gi memory limit accommodates hash joins and sort buffers for complex queries, with spill-to-disk as the fallback when queries exceed available memory.
 
-::: {.fieldreport}
+:::
 **Field report:** Our first Helm deployment used `requests.memory: 512Mi` for workers. The first TPC-H query OOM'd. The second deployment used `8Gi`. The third deployment used `4Gi` with spill-to-disk. That was the right answer. The lesson: memory limits for query engines should be set based on your query complexity, not your binary size. The binary is 40MB. The sort buffer for a 200-million-row GROUP BY is 6GB.
 :::
 
@@ -254,7 +254,7 @@ The request-to-limit ratio matters. A 1:8 ratio (512Mi request, 4Gi limit) means
 
 We settled on a 1:4 ratio for workers (1Gi request, 4Gi limit in moderate environments, 2Gi request, 8Gi limit in production). This gives enough breathing room for burst workloads without overcommitting the node to the point where the OOM killer becomes a scheduling strategy.
 
-::: {.antipattern}
+:::
 **Antipattern: setting requests equal to limits for query workers.** This guarantees your resource allocation (QoS class Guaranteed), but it also means you pay for peak capacity at all times. A worker sitting idle between queries still holds 8Gi of reserved memory. For bursty workloads (which describes every interactive SQL engine) Burstable QoS with a sensible request:limit ratio is the pragmatic choice.
 :::
 
@@ -305,7 +305,7 @@ spec:
 
 The one time it was not zero-downtime was instructive. We deployed a version that changed the protobuf schema for plan fragments. The new coordinator sent fragments that old workers could not deserialize. The workers returned errors. The coordinator retried on the same old workers. The queries failed. The fix was to upgrade workers first, then the coordinator. Workers are backward-compatible (they can handle old and new fragment formats). The coordinator is not (it sends the new format unconditionally). Upgrade order matters when the wire protocol changes.
 
-::: {.fieldreport}
+:::
 **Field report:** The protobuf-breaking upgrade taught us the rule: workers first, coordinator second. Workers understand old fragments. The coordinator sends new fragments. If you reverse the order, you have a window where the coordinator speaks a language no worker understands. We added this to the Helm chart's NOTES.txt and moved on.
 :::
 
@@ -367,7 +367,7 @@ source tests/.test-env && cargo test -p sqe-coordinator --test integration_test 
 
 Three commands. From zero to running integration tests. No cloud account. No VPN. No configuration file you need to copy from a wiki page that was last updated in 2023.
 
-::: {.sovereignty}
+:::
 **Sovereignty principle:** If your test infrastructure requires a cloud account, your development velocity is gated by your cloud provider. The Polaris + RustFS stack runs entirely on localhost. A new team member can run the full integration test suite on their first day, on an airplane, with no internet connection. That is sovereignty in development workflow.
 :::
 
@@ -611,7 +611,7 @@ These choices are sovereignty choices. An engine that requires a dedicated infra
 
 The best query engine is the one people actually run. And people run engines they can deploy, test, break, fix, and upgrade without calling a meeting first.
 
-::: {.ailog}
+:::
 **AI Logbook:** The AI wrote the five-stage Dockerfile with cargo-chef, sccache, and lld (reducing the image from 2.3GB to 47MB) and generated all seven Helm chart templates including the config checksum annotation trick for triggering rolling restarts on ConfigMap changes. The human decided the deployment topology (Deployment not StatefulSet, workers-first upgrade order) and the port allocation scheme. The `no-new-privileges` and `cap_drop: ALL` security hardening on the production compose overlay was the human's specification; the AI applied it without understanding why it mattered.
 :::
 

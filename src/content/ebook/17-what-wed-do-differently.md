@@ -1,4 +1,4 @@
-# What We'd Do Differently {#sec:retrospective}
+# What We'd Do Differently
 
 > The honest chapter. The one most technical books skip.
 
@@ -88,7 +88,7 @@ A human saw that problem. The AI didn't.
 
 **"Should we?" questions.** The AI answers "how?" questions brilliantly. It does not answer "should we?" questions at all. Should we add Trino HTTP compatibility? Should we build six benchmark suites or just TPC-H? Should the policy engine support both OPA and Cedar, or pick one? These are product decisions, strategy decisions, resource allocation decisions. The AI will implement whichever one you choose. It won't help you choose.
 
-::: {.fieldreport}
+:::
 **Field report:** During the distributed execution design, the AI produced three complete implementations in three days. Each one compiled, passed tests, and was architecturally wrong for different reasons. The third iteration worked because I spent a full day writing a design document that explicitly stated the trust boundary between coordinator and worker. The AI couldn't derive that boundary from the code. It needed a human to draw the line.
 :::
 
@@ -175,7 +175,7 @@ We got there eventually. Chapter 10 shows the finished config surface. But the r
 
 The lightweight test stack -- Polaris in-memory mode plus RustFS (a Rust-native S3-compatible server) -- was the fix. No AWS account needed. No Docker pulls from third-party registries. The entire test dependency runs in-process or in local containers. We should have built this on day two.
 
-::: {.deadend}
+:::
 **Dead end: mocking the Iceberg catalog for integration tests.** We tried. We built mock implementations of the catalog traits that returned canned responses. The unit tests passed. Then we connected to a real Polaris instance and discovered that our mock didn't simulate Polaris's credential vending flow, which meant our S3 client configuration was wrong in production even though tests were green. Mock what you must, but test against the real thing as early as you can afford to.
 :::
 
@@ -202,7 +202,7 @@ The future architecture ships `PlanFragment` objects -- serialised subtrees of t
 
 The AI implemented the `ScanTask` protocol without complaint. It didn't flag that the approach would limit worker-side computation. That was a human insight, born from staring at EXPLAIN output and realising that the coordinator was doing all the aggregation work while two workers sat idle after their scans completed.
 
-::: {.deadend}
+:::
 **Dead end: per-file ScanTask dispatch.** Each worker got one file at a time. Clean separation of concerns. Terrible performance for aggregation queries, because all the compute-heavy work happened on the coordinator after the scans returned. The future fix is shipping plan fragments (subtrees) instead of individual scan tasks -- turning workers from "file readers" into "local query engines."
 :::
 
@@ -266,7 +266,7 @@ The pluggable architecture -- `PolicyEnforcer` trait, `AuthProvider` trait (desi
 
 This design-for-pluggability approach is directly connected to the spec-driven development model. You can't design a good trait boundary if you don't know what implementations it needs to support. The specs forced us to think about multiple implementations before writing the first one. The `PolicyEnforcer` trait is twenty-six lines long. It took longer to specify than to implement. And it will support OPA, Cedar, and whatever policy engine comes next, without changing a single line.
 
-::: {.artofagents}
+:::
 **Art of Agents:** This is *Use of Spies* (Chapter 13) -- the feedback loop. The retrospective closes the build cycle: specs, design, build, measure, learn. The learnings feed the next spec. The open-source goal means those learnings are public too. The feedback loop extends beyond the team to every engineer who reads this code or this book.
 :::
 
@@ -331,7 +331,7 @@ The `block_in_place` usage in `SchemaProvider::table_names()` had been there sin
 
 In total, writing the book produced 12 code fixes and 6 remaining TODO items. Some were genuine bugs. Some were missing features. Some were documentation gaps that would have confused contributors. All were invisible until someone had to explain, in writing, what the code was supposed to do.
 
-::: {.fieldreport}
+:::
 **Field report:** The book review process caught factual errors about Iceberg's partition evolution ("unique to Iceberg" -- it's not anymore, Delta Lake has liquid clustering), PyIceberg's GIL behavior (I/O releases the GIL, only scan planning is bound), and Polaris's access control model (it does have RBAC, not "no opinions"). Every claim in a technical book is a claim that can be verified. The reviewers verified them, and several were wrong.
 :::
 
@@ -354,14 +354,14 @@ Fifteen days. Three hundred and sixteen commits. Twelve crates. One principal en
 
 That ratio -- one human, one AI, clear roles -- is the thing I'd keep above all else.
 
-::: {.ailog}
+:::
 **AI Logbook:** This chapter is the one the AI could not have written alone. The retrospective required evaluating which decisions were right, which were wrong, and why. These are judgments that depend on context the AI never had. The AI drafted the prose from the human's structural outline and specific commit references. The honest assessment of AI limitations (three wrong distributed execution designs, inability to evaluate its own output, the security trade-off it missed twice) was the human's observation; the AI would have reported its own work as successful at every stage.
 :::
 
-::: {.sovereignty}
+:::
 **Sovereignty principle:** Sovereignty applies to your development process too. The AI is a tool, not a decision-maker. You own the architecture. You own the security model. You own the trade-offs. The AI accelerates the implementation of decisions you've already made. The moment you let it make the decisions, you've outsourced your sovereignty to a model that doesn't understand your constraints.
 :::
 
-::: {.fieldreport}
+:::
 **Field report:** This book was also written with AI assistance. The same model applies: I decided what each chapter needed to say, wrote the structural outline, identified the specific commits and code examples to reference. The AI did the prose drafting. I edited every paragraph. The voice is mine. The pace was the AI's. The ratio holds.
 :::

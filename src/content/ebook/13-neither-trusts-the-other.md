@@ -1,4 +1,4 @@
-# Neither Trusts the Other {#sec:coord-worker}
+# Neither Trusts the Other
 
 > The coordinator decides. The worker executes.
 > Neither trusts the other more than necessary.
@@ -91,7 +91,7 @@ Every check has a graceful fallback: return the original plan unchanged. If the 
 
 This is deliberate. Distribution is an optimization, not a requirement. The system must work without it.
 
-::: {.datafusion}
+:::
 **DataFusion deep dive:** The `try_distribute` method operates on the physical plan *after* DataFusion's optimizer has run. This matters. Policy enforcement happens on the logical plan (Chapter 8), before optimization. By the time we reach `try_distribute`, row filters and column masks are already baked into the plan tree. The workers never see the original unfiltered plan. They get scan fragments that already reflect the user's policy-restricted view.
 :::
 
@@ -204,7 +204,7 @@ The scheduler also considers existing load. If worker 1 is already executing 10 
 
 Unhealthy workers are filtered out before scheduling begins. If a worker missed three consecutive health checks, it does not receive work. Period.
 
-::: {.fieldreport}
+:::
 **Field report:** Our first scheduler was pure round-robin -- task 0 to worker 0, task 1 to worker 1, and so on. It worked for uniform workloads. Then we ran a benchmark where one partition had 300MB of Parquet files and another had 2MB. The round-robin scheduler put both on different workers, but the worker with the 300MB partition became a bottleneck while the other worker sat idle for 12 seconds. The weighted scheduler fixed this in one afternoon. The bin-packing heuristic is not perfect, but it handles the common case of heterogeneous partition sizes without requiring per-file size metadata.
 :::
 
@@ -354,7 +354,7 @@ DataFusion's `FairSpillPool` divides memory fairly among concurrent operators. W
 
 This is the right behaviour. A worker scanning too much data for its memory budget should fail fast, not silently swap until the kernel kills it. The coordinator can then reassign the fragment to a worker with more headroom, or fall back to local execution where the coordinator's larger memory pool might absorb the load.
 
-::: {.deadend}
+:::
 **Dead end: unlimited worker memory.** Our first deployment ran workers with no memory limit. The assumption was that S3 reads are streaming and memory consumption stays bounded. It was wrong. Column projection on wide tables with deeply nested Parquet schemas can temporarily require significant memory for decompression buffers. Two concurrent queries on a 200-column table caused the worker process to consume 14GB and get OOM-killed by Kubernetes. Adding `FairSpillPool` with explicit limits fixed this in one commit. The lesson: always bound your workers' resources, even when you think the workload is streaming.
 :::
 
@@ -389,7 +389,7 @@ In the current implementation, the coordinator still sends credentials in the `S
 
 The path from "coordinator passes its own credentials" to "Polaris vends scoped credentials per table" is a configuration change, not an architecture change. The `ScanTask` already has fields for `s3_access_key`, `s3_secret_key`, and `s3_session_token`. The only difference is where those values come from.
 
-::: {.deadend}
+:::
 **Dead end: workers calling Polaris directly.** We considered having workers contact Polaris themselves, using the user's JWT to obtain their own S3 credentials. This would eliminate credential passing entirely. The problem: every worker would need Polaris connectivity and the catalog URL. It would also mean N workers making N credential requests for the same table, when the coordinator already has the credentials from planning the query. The duplication was wasteful and the additional network dependency made workers less isolated. We kept credential passing via the `ScanTask`.
 :::
 
@@ -495,7 +495,7 @@ Schema projection on the coordinator side handles a subtle problem. Workers retu
 
 This projection mismatch caused one of our more confusing bugs. We ran `SELECT COUNT(*) FROM orders` distributed across two workers. Both workers returned correct batches with all projected columns. But DataFusion's `AggregateExec` for `COUNT(*)` expects zero input columns -- it only needs the row count. The `DistributedScanExec` was producing batches with 5 columns where the parent expected 0. DataFusion did not crash. It silently produced wrong results. The fix was the `expected_cols == 0` branch in the stream adapter, which strips all columns and preserves only the row count. One of those bugs where the system looks correct until you check the numbers.
 
-::: {.datafusion}
+:::
 **DataFusion deep dive:** `DistributedScanExec` implements `ExecutionPlan` with `Partitioning::UnknownPartitioning(n)` where `n` is the number of scan tasks. DataFusion's `collect()` function calls `execute(i)` for each partition and merges the results. This means all worker scans run in parallel -- DataFusion's task scheduler handles the concurrency. We did not need to build our own parallel dispatch loop. DataFusion did it for us.
 :::
 
@@ -663,7 +663,7 @@ The worker cannot see the full query. It cannot modify the plan it received. It 
 
 These constraints are also features. A compromised worker that cannot see the full query cannot reconstruct what the user asked. A worker that cannot contact other workers cannot be used as a pivot point in a lateral network movement. A worker that cannot exceed its memory limit cannot destabilize the host.
 
-::: {.sovereignty}
+:::
 **Sovereignty principle:** In a distributed system, every trust boundary is an attack surface. The coordinator-worker boundary is designed so that compromising either side gives the attacker the least possible advantage. The coordinator cannot read data. The worker cannot see plans. Neither holds credentials beyond what the current query requires. This is not paranoia -- it is the minimum viable security posture for a system that handles production data.
 :::
 
@@ -724,6 +724,6 @@ This is more code than a naive implementation where the coordinator ships the en
 
 The coordinator decides. The worker executes. Neither trusts the other more than necessary. That is the contract. Everything else follows from it.
 
-::: {.ailog}
+:::
 **AI Logbook:** The AI implemented the `DistributedScanExec`, `WorkerFlightService`, `execute_scan`, the credential refresh push mechanism with `tokio::sync::watch` channels, and the `CredentialRefreshTracker`, all from a design doc that explicitly stated the trust boundary between coordinator and worker. The human drew that trust boundary; the AI couldn't derive it from the code. The `COUNT(*)` schema projection bug (workers returning five columns where the parent `AggregateExec` expected zero) produced silently wrong results that the human found by checking the numbers; the AI's fix was the `expected_cols == 0` branch in the stream adapter.
 :::

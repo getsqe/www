@@ -1,4 +1,4 @@
-# The Catalog Wars {#sec:catalog-wars}
+# The Catalog Wars
 
 > Before you can query data, something has to tell you where it is.
 > That something is the catalog. And everyone wants to own it.
@@ -56,7 +56,7 @@ Then in late 2024, AWS added an Iceberg REST endpoint to Glue. On paper, this wa
 
 I tested it with PyIceberg as soon as it was available.
 
-::: {.devto}
+:::
 **From the blog:** "Glue Iceberg Rest Api and PyIceberg" (December 2024). I walked through configuring PyIceberg against Glue's REST endpoint, creating tables, running scans. The API was functional. The limitations surfaced within hours.
 :::
 
@@ -68,7 +68,7 @@ For a single-cloud deployment where AWS is a permanent commitment, Glue is fine.
 
 There's also the Collibra angle. We use Collibra for data governance: classification, lineage, access policies. When we explored Collibra Protect with Snowflake and Iceberg tables, the governance layer worked because Snowflake was the enforcement point. But Glue has no equivalent enforcement surface. Lake Formation tries, but it's a separate system with separate concepts and separate permissions. Your governance tool says "mask this column for this role." Then you have to translate that into Lake Formation policies, Glue catalog permissions, and IAM policies. Three translations of one intent. Each translation is a place where the intent gets lost.
 
-::: {.deadend}
+:::
 **Dead end: Glue as the primary catalog.** We used Glue for nearly two years of development and experimentation. It's how we learned the Iceberg REST protocol. It's how we validated that a query engine could talk to a catalog over HTTP. But it's also how we learned that a managed catalog is a dependency disguised as a convenience. When we tried cross-cloud scenarios (querying the same tables from both AWS and a local development environment) Glue couldn't follow. And when we tried to enforce governance policies across Glue tables, the translation layers between Collibra, Lake Formation, and IAM became their own maintenance burden.
 :::
 
@@ -79,7 +79,7 @@ Databricks open-sourced Unity Catalog in mid-2024. This was a significant move. 
 
 I tested it the same week Databricks published the Iceberg REST compatibility layer.
 
-::: {.devto}
+:::
 **From the blog:** "Unity Catalog Iceberg Rest Api and PyIceberg" (December 2024). Testing Unity's REST compliance with PyIceberg. It worked. Table creation, metadata loading, namespace management, all functional over the standard Iceberg REST API.
 :::
 
@@ -102,7 +102,7 @@ Between the Glue experiments and the Unity evaluation, I spent time on a problem
 
 The scenario: tables registered in Snowflake, queryable from tools outside Snowflake. Snowflake had added Iceberg table support; you could create tables backed by Parquet files in your own S3 bucket, with metadata managed by Snowflake. This meant the data was nominally open, but the catalog was still Snowflake.
 
-::: {.devto}
+:::
 **From the blog:** "Bridging Clouds: Access Snowflake Iceberg Tables via Glue and Spark" (October 2024). I built a bridge between Snowflake's Iceberg tables and AWS Glue, making tables visible to Spark EMR jobs. The bridge worked. It also revealed how deeply each catalog assumes it's the only catalog.
 :::
 
@@ -112,7 +112,7 @@ This doesn't scale. Two catalogs means reconciliation logic. Three catalogs mean
 
 The right answer is one catalog. One source of truth for table metadata. Every engine, every tool, every cloud, they all talk to the same catalog. The catalog doesn't live inside any engine. It doesn't live inside any cloud provider's managed service. It runs where you put it, speaks HTTP, and has no opinions about what connects to it.
 
-::: {.fieldreport}
+:::
 **Field report:** The Snowflake-to-Glue bridge worked in production for about six months. During that time, we hit metadata drift three times: tables that were updated in Snowflake but not yet synchronised to Glue, causing Spark jobs to read stale data or fail on schema mismatches. Each incident took about four hours to diagnose because the root cause was always "which catalog has the current version?" Every time, someone asked: "Why do we have two catalogs?" We never had a good answer.
 :::
 
@@ -121,7 +121,7 @@ The right answer is one catalog. One source of truth for table metadata. Every e
 
 Before settling on building our own engine, I spent time with DuckDB, the embedded analytical database that runs anywhere, needs no cluster, and processes Parquet at surprising speed.
 
-::: {.devto}
+:::
 **From the blog:** "DuckDB S3 Tables with Iceberg using Iceberg Rest API" (January 2025). I connected DuckDB to an Iceberg REST catalog, read tables from S3, and ran analytical queries locally. No Spark. No Trino. No cluster management. Just a binary and a catalog URL.
 :::
 
@@ -232,7 +232,7 @@ The property names (`s3.access-key-id`, `s3.secret-access-key`, `s3.session-toke
 
 This is the sovereignty argument in miniature. The code depends on a specification, not on a product. If Polaris ceased to exist tomorrow, any compliant REST catalog would be a drop-in replacement for the credential vending flow.
 
-::: {.sovereignty}
+:::
 **Sovereignty principle:** Credential vending moves the security boundary from the engine to the catalog. The engine never holds ambient storage credentials. It receives scoped, temporary credentials through a standard protocol. This means you can swap the catalog without touching the engine's security model. The security model is the protocol, not the product.
 :::
 
@@ -321,7 +321,7 @@ One thing we learned quickly: Polaris's in-memory mode is not just a convenience
 
 That shift in development velocity is hard to overstate. When testing the catalog integration is cheap, you test it more. When you test it more, you find problems earlier. When you find problems earlier, the catalog code is better. The tool shaped the practice.
 
-::: {.fieldreport}
+:::
 **Field report:** During one debugging session, we needed to inspect a table's manifest list to understand a failed compaction. Instead of building a debug tool for the catalog, we pointed PyIceberg directly at the S3 location from the catalog's `metadata_location` field and read the manifests manually. The table format is the source of truth. The catalog is an index.
 :::
 
@@ -410,7 +410,7 @@ Polaris has no ecosystem to pull you toward. It's a catalog. It stores table met
 
 The Iceberg REST specification is the real winner. Not Polaris specifically, but the protocol. The protocol means your catalog choice is reversible. It means your engine doesn't know or care which catalog implementation answers its HTTP calls. It means the most important component in your data platform, the one that answers "what tables exist and where are their files," is a standard interface that you can implement, replace, or self-host without touching a line of engine code.
 
-::: {.ailog}
+:::
 **AI Logbook:** The AI produced the `SessionCatalog`, `CredentialCache`, and all eight `sqe-catalog` modules in a single session from a spec that named each module and its purpose. The human chose Polaris over Unity, Glue, and Nessie after months of hands-on evaluation that the AI never saw. The credential vending extraction code (parsing `s3.access-key-id` from the REST response config map) was correct on the first pass; the three days of debugging Polaris 0.9-vs-1.0 timestamp format differences were entirely human detective work.
 :::
 

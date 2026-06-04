@@ -1,4 +1,4 @@
-# You Are the Query {#sec:auth}
+# You Are the Query
 
 > There is no service account. There is only you.
 
@@ -23,7 +23,7 @@ Every major query engine works this way. Trino, Spark, Presto, Starburst -- they
 
 The problem is that it conflates two things that should be separate: who can run a query and who can access the data. The engine decides both. If the engine is wrong about either one, the failure is silent. No alarm fires when a service account reads a file it shouldn't, because the service account can read everything.
 
-::: {.deadend}
+:::
 **Dead end: service account with tagging.** It's the path of least resistance, and every major
 query engine uses it. We built a prototype in an afternoon. The security team rejected it
 in a meeting that lasted twelve minutes.
@@ -87,7 +87,7 @@ The backend selection happens at startup based on configuration. If `keycloak_ur
 
 This matters because different deployments need different auth models. A production cluster behind Keycloak uses the password grant. A local development stack running against Polaris directly uses client credentials. The integration test suite uses client credentials against a Polaris in-memory catalog. Same engine, same code path, different auth backend.
 
-::: {.datafusion}
+:::
 **DataFusion deep dive:** The `FlightSqlService::do_handshake` method receives a `HandshakeRequest`
 stream. SQE extracts the Basic auth header, calls Keycloak's token endpoint, and returns the
 JWT as the session token. Every subsequent Flight call carries this token in the `authorization`
@@ -161,7 +161,7 @@ There's a second authentication path. For programmatic clients that already have
 
 This dual-path design means SQE works with both interactive users (DBeaver, CLI) and programmatic callers (dbt, Airflow, custom services) without either side having to adapt.
 
-::: {.antipattern}
+:::
 **Antipattern: validating JWTs in the engine.** It's tempting to validate JWT signatures in
 the coordinator -- check the issuer, verify the audience, validate the expiry. We considered
 it. The problem: the coordinator is not the resource server. Polaris is. S3 is. If the
@@ -210,7 +210,7 @@ The credential lifetime is controlled by Polaris configuration, typically 15 min
 
 Each component makes its own access decision. The coordinator doesn't decide what Alice can read from S3. Polaris does. The coordinator doesn't decide whether Alice's credentials are valid. S3 does. The engine is a coordinator of decisions, not the decision maker.
 
-::: {.iceberg}
+:::
 **Iceberg deep dive:** The Iceberg REST catalog specification (the `loadTable` endpoint) supports
 a `config` field in the response that can include `s3.access-key-id`, `s3.secret-access-key`,
 and `s3.session-token`. This is the credential vending mechanism. Polaris implements it by
@@ -290,7 +290,7 @@ Every type that holds secrets -- `Session`, `RefreshableCredentials`, `CachedTok
 
 This is the full chain: user authenticates with OIDC, coordinator holds the JWT, coordinator asks Polaris for credentials scoped to the user, coordinator sends those credentials to workers with the plan fragment, workers read from S3 using the user's credentials, and if the credentials expire mid-scan, the coordinator pushes fresh ones. At every point, every byte read from storage is attributed to the user who initiated the query.
 
-::: {.fieldreport}
+:::
 **Field report: the three-day credential push.** We hit this during load testing: 50 concurrent
 clients, some queries queued long enough that their vended S3 credentials expired before
 execution started. The worker got a `403 Forbidden` that surfaced as a cryptic Arrow error
@@ -320,7 +320,7 @@ The compliance property matters for regulated industries. If your security audit
 
 Rust's ownership model reinforces this. When a session is dropped, the `access_token` and `refresh_token` strings are deallocated -- not "eligible for collection," but gone. No garbage collector holding references longer than expected. Deterministic credential cleanup for free.
 
-::: {.sovereignty}
+:::
 **Sovereignty principle:** A service account is a shared secret. A bearer token is a proof of identity.
 The difference is the difference between "the engine read the data" and "Alice read the data."
 When security asks who accessed the customer table, the answer should be a name, not an application.
@@ -445,7 +445,7 @@ The `AuthProvider` trait is deliberately minimal: one method, one input type, on
 
 The "you are the query" principle still holds for every one of these ten providers. Whether Alice proves her identity via Keycloak password grant, a pre-obtained JWT, an IAM execution role, or an mTLS certificate, what flows downstream is the same thing: an `Identity` with a `catalog_token` that Polaris and S3 will recognise as Alice. The mechanism changes. The property (every S3 access attributed to a specific human or service) does not.
 
-::: {.devto}
+:::
 **dev.to connection:** "Software Supply Chain Security: Keeping Your (Rust) Dependencies Clean"
 (2025) explored the broader question of trust in your dependency chain. The auth model is the
 same question applied to runtime: do you trust the engine to act on behalf of all users, or
@@ -453,6 +453,6 @@ do you make each user prove their identity to every system they touch? The answe
 the same for both: trust nothing, verify everything.
 :::
 
-::: {.ailog}
+:::
 **AI Logbook:** The AI generated working STS assume-role code for Path 2 in twenty minutes, code we then discarded when the human decided the IAM operational model was unworkable. The `Authenticator` struct with its `OidcPassword` and `ClientCredentials` backends, the `SessionManager` with `DashMap`, and the background token refresh task were all AI-implemented from a spec that described the three authentication paths. The human chose Path 3 (bearer passthrough) after two days of evaluating the alternatives; the AI implemented whichever path was specified without questioning the security trade-offs.
 :::

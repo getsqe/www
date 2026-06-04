@@ -1,4 +1,4 @@
-# Benchmarks Don't Lie (But They Mislead) {#sec:benchmarks}
+# Benchmarks Don't Lie (But They Mislead)
 
 > The number that matters is the one your users will hit.
 > Everything else is marketing.
@@ -216,7 +216,7 @@ let in_table_context = upper_before.ends_with(" FROM")
 
 This is not elegant. It is a hand-rolled SQL-aware string replacer. A proper solution would parse the SQL into an AST, walk the tree, and qualify `TableReference` nodes. We considered it. The effort would have been a full day for marginal correctness improvement. The heuristic handles all 222 queries across all seven suites. Sometimes the pragmatic solution is the right one.
 
-::: {.deadend}
+:::
 **Dead end: AST-based table qualification.** We started building a proper SQL parser pass
 to qualify table references. It worked for simple queries but broke on TPC-DS's deeply
 nested subqueries where the same table name appears as both a table reference and a
@@ -248,7 +248,7 @@ let channel = Channel::from_shared(url.clone())?
 
 But the fix in the benchmark client exposed that we also needed it in the engine's own worker-to-coordinator connections. The benchmark found a bug in `sqe-bench` that pointed to the same class of bug in `sqe-worker`. One fix, two places.
 
-::: {.fieldreport}
+:::
 **Field report: the silent connection.** This bug would have been invisible in integration
 tests because those run one query per connection. It only appears under sustained
 sequential load, exactly the pattern a nightly benchmark run produces. The benchmark
@@ -341,7 +341,7 @@ The fix: invalidate the SessionContext cache after every schema-modifying operat
 
 The result was dramatic. Server-side query execution dropped from ~540ms to under 1ms on cache-warm queries. The `SELECT 1` test showed 0.4ms server-side processing with both caches hitting.
 
-::: {.fieldreport}
+:::
 **Field report: the token fingerprint that never matched.** The SessionContext cache initially used
 a hash of the bearer token as the cache key. Cache hit rate: 0%. Every OIDC request generates a
 fresh token with a new JTI claim. Same user, different token, different hash, always a cache miss.
@@ -401,7 +401,7 @@ The benchmark results confirm the architecture matches the use case. But more th
 
 If your workload is analytical queries over Iceberg tables (and that is the workload SQE was built for) the numbers are unambiguous. SQE is faster. Not because Rust is faster than Java (though it helps). Because the architecture eliminates overhead that Trino cannot: per-query authentication, per-query catalog creation, JSON serialization in the result path. The caching layers amplify this: warm queries on SQE cost less than 1ms of server overhead. Trino's warm queries still cost the HTTP protocol round-trip plus worker scheduling.
 
-::: {.antipattern}
+:::
 **Antipattern: Benchmark-Driven Architecture.** TPC-H is a synthetic workload from 1992.
 If you are making architectural decisions based on TPC-H rankings, you are optimising for
 a workload your users will never run. Profile your actual queries. Identify which pattern
@@ -494,7 +494,7 @@ The benchmark that mattered was not query latency. It was operational cost. One 
 
 There is another number in that table that deserves attention: ad-hoc query latency during the batch. 0.8 seconds versus 1.2 seconds. That gap is not about raw engine speed. It is about resource isolation. SQE runs each query as the authenticated user, with per-query memory limits and independent DataFusion session contexts. A heavy dbt CTAS running on one session does not starve ad-hoc queries running on another. Trino's resource groups can achieve similar isolation, but configuring them correctly is a project in itself. SQE gets isolation by default because the architecture enforces it.
 
-::: {.fieldreport}
+:::
 **Field report: the number that convinced management.** We presented the TPC-H numbers.
 Management nodded politely. We presented the dbt batch wall-clock comparison. They
 nodded more enthusiastically. We presented the deployment comparison, 4 minutes versus
@@ -558,11 +558,11 @@ SQE wins 6 of 7 suites. The "avg speedup" column is the per-query mean: SQE wins
 
 The optimizations that closed the SF1 gap, in chronological order: table-level statistics from Iceberg snapshot summary (April), the star-schema join reorder rule (April), broadcast threshold raised to 64 MB matching Trino and Spark (April), dynamic filter type coercion with Int32-to-Int64 widening (April), and column-level statistics aggregated from manifest entries (May). The last one was the missing ingredient. Without per-column min/max/null_count, DataFusion's `JoinSelection` could swap build and probe sides but could not estimate filter selectivity or pick join order on multi-way chains. Adding it dropped TPC-DS SF1 by 21% on the dedicated comparison run, with q72 falling from 24.8s back to its April baseline.
 
-::: {.fieldreport}
+:::
 **Field report: q73 was a planning sensitivity, not a regression.** Right after column-stats landed, q73 looked 84% slower (458ms -> 842ms). The next run came back at 258ms. Same code, different cache state, different plan. With more selectivity bounds available the optimizer has more degrees of freedom, and q73's OR-heavy `WHERE` clause sits in a region where small changes in estimated row counts flip the join order. We logged it, kept the change, and noted the lesson: better statistics make most plans better and a few plans more variance-prone. The fix when it bites is column histograms or NDV, both still upstream gaps in DF.
 :::
 
-::: {.fieldreport}
+:::
 **Field report: correctness before speed.** We spent April 6-10 making SQE slower but more correct. Adding UDFs increased SessionContext build time. Adding streaming writes increased CTAS overhead. Adding sort-order safety added metadata checks. Every feature made the pass count go up and the runtime go up with it. Then caching made everything fast. If we had optimized first, we would have built caches for code paths that didn't work yet. Correctness first, speed second. The order matters.
 :::
 
@@ -732,7 +732,7 @@ All benchmark JSON results are committed to `benchmarks/results/` in the reposit
 
 The naming convention encodes everything you need: `tpch-sf1-flight-2026-04-06T20:57:10.json` tells you the benchmark, scale factor, protocol, and exact timestamp. Compare any two files and you have a regression test.
 
-::: {.ailog}
+:::
 **AI Logbook:** The benchmark generators were pure AI work: 24 TPC-DS tables, 8 TPC-H tables, 9 TPC-C tables, all with correlated random data using seeded RNGs. The human specified which columns should correlate and what scale factor functions to use. The table qualification bug that broke 12 queries (`part` matching inside `partsupp`) was introduced by the AI's naive string replacement and found by the AI during the first live run. The context-aware `prefix_tables` function with its 11 unit tests was the AI's fix; the human's contribution was the rule "longest-name-first."
 :::
 
