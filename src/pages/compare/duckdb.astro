@@ -4,6 +4,7 @@ import SectionHeading from '../../components/SectionHeading.astro';
 import CompareTable from '../../components/CompareTable.astro';
 import FeatureGrid from '../../components/FeatureGrid.astro';
 import AsOf from '../../components/AsOf.astro';
+import Terminal from '../../components/Terminal.astro';
 
 // Curated comparison (derived from the synced duckdb-comparision source doc).
 // The raw source is an internal audit/roadmap; this page keeps the
@@ -73,6 +74,33 @@ const gaps = [
       <p class="block__sub">The embedded-mode capabilities SQE grew while chasing DuckDB’s
         developer ergonomics — all on the same binary that runs the cluster.</p>
       <FeatureGrid items={inspired} columns={4} />
+    </div>
+
+    <div class="container block">
+      <h2 class="block__h section-marker">See it — DuckDB-style, in SQE</h2>
+      <p class="block__sub">The same file-first ergonomics, in an embedded <code>sqe-cli</code> session.
+        No cluster, no catalog setup.</p>
+      <Terminal title="sqe-cli --embedded">
+        <span class="t-line t-comment"># Query a Parquet file directly — no table, no setup</span>
+        <span class="t-line"><span class="t-prompt">sqe&gt;</span> <span class="t-kw">SELECT</span> <span class="t-fn">count</span>(*) <span class="t-kw">FROM</span> <span class="t-str">'data/events.parquet'</span>;</span>
+        <span class="t-line t-out">┌──────────┐
+│ count(*) │
+├──────────┤
+│ 1048576  │
+└──────────┘</span>
+        <span class="t-line"> </span>
+        <span class="t-line t-comment"># read_csv with DuckDB-parity options + gzip auto-detect</span>
+        <span class="t-line"><span class="t-prompt">sqe&gt;</span> <span class="t-kw">SELECT</span> * <span class="t-kw">FROM</span> <span class="t-fn">read_csv</span>(<span class="t-str">'s3://bucket/orders.tsv.gz'</span>, header =&gt; <span class="t-kw">true</span>) <span class="t-kw">LIMIT</span> 3;</span>
+        <span class="t-line"> </span>
+        <span class="t-line t-comment"># A HuggingFace dataset, straight from the hf:// URL</span>
+        <span class="t-line"><span class="t-prompt">sqe&gt;</span> <span class="t-kw">SELECT</span> * <span class="t-kw">FROM</span> <span class="t-str">'hf://datasets/squad/plain_text/train.parquet'</span> <span class="t-kw">LIMIT</span> 5;</span>
+        <span class="t-line"> </span>
+        <span class="t-line t-comment"># Delta Lake with time travel</span>
+        <span class="t-line"><span class="t-prompt">sqe&gt;</span> <span class="t-kw">SELECT</span> * <span class="t-kw">FROM</span> <span class="t-fn">read_delta</span>(<span class="t-str">'/data/delta/sales'</span>, version =&gt; <span class="t-str">'5'</span>);</span>
+        <span class="t-line"> </span>
+        <span class="t-line t-comment"># Export results back out</span>
+        <span class="t-line"><span class="t-prompt">sqe&gt;</span> <span class="t-kw">COPY</span> (<span class="t-kw">SELECT</span> * <span class="t-kw">FROM</span> orders <span class="t-kw">WHERE</span> region=<span class="t-str">'EU'</span>) <span class="t-kw">TO</span> <span class="t-str">'eu.parquet'</span>;</span>
+      </Terminal>
     </div>
 
     <div class="container block">

@@ -47,9 +47,9 @@ The **real** safety guarantee is the gate over the **synced source markdown** (r
   (Jacob Verhoeks & Rafael Herrero) and frames the sovereign-data-platform vision — a deliberate
   divergence from the spec's "no SBP naming" rule, per direct request. SBP naming stays out of the
   nav/footer *chrome*; it lives in About page content only.
-- **`src/pages/log.astro`** is hand-authored: a "current state" snapshot + a curated milestone
-  timeline + a **verified open roadmap** (items already shipped — OPA/Cedar, Azure/GCS, map-aggregates
-  — are deliberately excluded). Update by hand as the project moves.
+- **`src/pages/roadmap.astro`** (route `/roadmap`) is hand-authored: a "current state" snapshot + a
+  curated milestone timeline + a **verified open roadmap** (items already shipped — OPA/Cedar,
+  Azure/GCS, map-aggregates — are deliberately excluded). Update by hand as the project moves.
 - **`src/pages/compare/trino.astro`** and **`compare/features.astro`** still render the synced
   markdown matrices, but the sync script now **trims the dated "Items shipped" changelog / "Engine
   Limitations & Roadmap" sections and stale dated blockquotes**, and the pages add a curated header +
