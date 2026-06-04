@@ -301,7 +301,7 @@ benchmark claim, just a smoke test that says "embedded mode is at least as
 fast as DuckDB on basic file load."
 
 The full V8-V12 narrative lives in
-[the blog post](https://github.com/schubergphilis/sqe/blob/main/docs/blog/2026-05-07-accidentally-duckdb.md) and ebook chapter
+[the blog post](/blog/2026-05-07-accidentally-duckdb) and ebook chapter
 [16d "The DuckDB Drift"](https://github.com/schubergphilis/sqe/blob/main/docs/ebook/chapters/16d-the-duckdb-drift.md).
 
 ## Related docs
@@ -315,4 +315,4 @@ The full V8-V12 narrative lives in
 - [Trino compatibility](/compare/trino): separate compatibility track
 - [Roadmap](https://github.com/schubergphilis/sqe/blob/main/docs/roadmap.md): phase-by-phase plan
 - [HF glob research](https://github.com/schubergphilis/sqe/blob/main/docs/hf-glob-research.md): V12.2 design
-- [The DuckDB drift (blog)](https://github.com/schubergphilis/sqe/blob/main/docs/blog/2026-05-07-accidentally-duckdb.md): the V8-V12 narrative
+- [The DuckDB drift (blog)](/blog/2026-05-07-accidentally-duckdb): the V8-V12 narrative

@@ -1,0 +1,46 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection, render } from 'astro:content';
+import type { GetStaticPaths } from 'astro';
+
+export const getStaticPaths = (async () => {
+  const posts = await getCollection('blog');
+  return posts.map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
+}) satisfies GetStaticPaths;
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+const { title, description, pubDate, author, tags } = entry.data;
+const fmt = pubDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+---
+<BaseLayout title={`${title} — SQE blog`} description={description}>
+  <section class="section">
+    <div class="container post">
+      <p class="post__crumb"><a href="/blog">← Blog</a></p>
+      <header class="post__head">
+        <time class="post__date" datetime={pubDate.toISOString()}>{fmt}</time>
+        <h1>{title}</h1>
+        <p class="post__by">by {author}</p>
+        {tags.length > 0 && (
+          <div class="post__tags">{tags.map((t) => <span class="tag">{t}</span>)}</div>
+        )}
+      </header>
+      <article class="prose post__body"><Content /></article>
+      <p class="post__foot"><a href="/blog">← All posts</a></p>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .post { max-width: 760px; }
+  .post__crumb { font-size: 0.9rem; margin-bottom: 20px; }
+  .post__head { border-bottom: 1px solid var(--border); padding-bottom: 22px; margin-bottom: 32px; }
+  .post__date { font-family: var(--font-mono); font-size: 0.82rem; color: var(--sqe-blue); font-weight: 600; }
+  .post__head h1 { font-size: clamp(2rem, 4vw, 2.8rem); margin: 8px 0 6px; }
+  .post__by { color: var(--text-muted); font-size: 0.95rem; margin: 0; }
+  .post__tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 14px; }
+  .tag { font-family: var(--font-mono); font-size: 0.72rem; color: var(--gray-medium); background: var(--soft-blue); padding: 0.15em 0.5em; border-radius: 5px; }
+  .post__body { font-size: 1.05rem; line-height: 1.75; }
+  .post__body :global(img) { max-width: 100%; height: auto; border-radius: var(--radius-sm); border: 1px solid var(--border); }
+  .post__foot { margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--border); }
+</style>

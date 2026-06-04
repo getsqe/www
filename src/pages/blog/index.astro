@@ -1,0 +1,81 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import MonoEyebrow from '../../components/MonoEyebrow.astro';
+import MarkerBar from '../../components/MarkerBar.astro';
+import { getCollection } from 'astro:content';
+
+const posts = (await getCollection('blog')).sort(
+  (a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime(),
+);
+
+const fmt = (d: Date) =>
+  d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+---
+<BaseLayout
+  title="Blog — engineering notes from SQE | getsqe.com"
+  description="Engineering posts from building SQE: replacing Trino with Rust, the Iceberg fork, caching, the DuckDB-shaped embedded mode, OpenLineage, and the benchmark journey."
+  darkHeader
+>
+  <section class="blog-hero">
+    <div class="container">
+      <span class="blog-eyebrow">Blog</span>
+      <h1>Engineering notes</h1>
+      <p class="blog-lede">
+        Design rationale and war stories from building SQE — replacing a Trino fork with Rust,
+        surviving the Iceberg rebase, the caching layers, the DuckDB-shaped surprise, and shipping
+        column-level lineage. Synced from the source repository.
+      </p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <MonoEyebrow text={`${posts.length} posts`} />
+      <MarkerBar />
+      <ul class="posts">
+        {posts.map((p) => (
+          <li class="post-card">
+            <a href={`/blog/${p.id}`} class="post-card__link">
+              <time class="post-card__date" datetime={p.data.pubDate.toISOString()}>{fmt(p.data.pubDate)}</time>
+              <h2 class="post-card__title">{p.data.title}</h2>
+              <p class="post-card__desc">{p.data.description}</p>
+              {p.data.tags.length > 0 && (
+                <div class="post-card__tags">
+                  {p.data.tags.slice(0, 4).map((t) => <span class="tag">{t}</span>)}
+                </div>
+              )}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .blog-hero {
+    background: var(--space-gray); color: #fff;
+    padding-block: clamp(44px, 6vw, 80px);
+    background-image: radial-gradient(800px 340px at 82% -10%, rgba(30, 232, 237, 0.1), transparent 60%);
+  }
+  .blog-eyebrow { font-family: var(--font-mono); color: var(--turquoise); font-size: 0.82rem; letter-spacing: 0.1em; font-weight: 600; }
+  .blog-hero h1 { color: #fff; margin: 12px 0 14px; }
+  .blog-lede { color: rgba(255,255,255,0.82); max-width: 60ch; font-size: 1.1rem; }
+
+  .posts { list-style: none; padding: 0; margin: 22px 0 0; display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .post-card { display: flex; }
+  .post-card__link {
+    display: flex; flex-direction: column; gap: 8px;
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 22px; width: 100%; color: var(--text);
+    transition: border-color 0.15s ease, transform 0.08s ease;
+  }
+  .post-card__link:hover { border-color: var(--sqe-blue); transform: translateY(-2px); text-decoration: none; }
+  .post-card__date { font-family: var(--font-mono); font-size: 0.78rem; color: var(--sqe-blue); font-weight: 600; }
+  .post-card__title { font-size: 1.2rem; font-weight: 800; margin: 0; line-height: 1.2; }
+  .post-card__desc { font-size: 0.92rem; color: var(--text-muted); margin: 0; flex: 1; }
+  .post-card__tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
+  .tag { font-family: var(--font-mono); font-size: 0.7rem; color: var(--gray-medium); background: var(--soft-blue); padding: 0.15em 0.5em; border-radius: 5px; }
+
+  @media (max-width: 760px) { .posts { grid-template-columns: 1fr; } }
+</style>

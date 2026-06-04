@@ -28,6 +28,10 @@ To re-enable downloads:
 
 ## 4. Content refresh
 - [ ] `npm run sync` re-pulls + re-sanitizes from `$SQE` and runs the blocking leak gate. Never hand-author claims.
+- The **blog** (`/blog`, 28 posts) is synced from `$SQE/docs/blog/` with its image. The lone image
+  (`src/content/blog/images/sqe-web-ui-overview.png`) is the public web-UI dashboard screenshot;
+  the text gate can't scan PNGs, so it was eyeballed clean (localhost-only config, no ids/secrets).
+  Re-check any *new* blog images by eye before publishing.
 - [ ] Eyeball the read-online chapters (`src/content/ebook/*.md`) before upload: they are Jacob's prose with **mechanical** sanitizer edits (e.g. `ACCOUNT_ID`, "the sqe-catalog crate", "a feature branch"). Smooth any awkward artifacts by hand.
 
 ### Note on the leak gate's guarantee

@@ -7,6 +7,7 @@
 # Steps:
 #   1. Copy the three comparison docs -> src/content/compare/
 #   2. Copy ebook chapters -> src/content/ebook/ and PDF/EPUB -> public/downloads/
+#   2b. Copy blog posts + images -> src/content/blog/
 #   3. Run the publishable-subset filter on iceberg-matrix-state.json
 #   4. Run the BLOCKING leak-scan gate over everything staged for publish.
 #      Any hit aborts the sync (exit 1) — nothing is published until sanitized.
@@ -38,6 +39,12 @@ cp "$SQE_DIR/docs/ebook/diagrams/rendered/"*.svg "$HERE/src/content/ebook/diagra
 cp "$SQE_DIR/docs/ebook/build/sovereign-by-design.pdf"  "$HERE/public/downloads/" 2>/dev/null || echo "  (warn: pdf not found)"
 cp "$SQE_DIR/docs/ebook/build/sovereign-by-design.epub" "$HERE/public/downloads/" 2>/dev/null || echo "  (warn: epub not found)"
 
+# --- 2b. blog posts + images ------------------------------------------------
+mkdir -p "$HERE/src/content/blog/images"
+rm -f "$HERE/src/content/blog"/*.md
+cp "$SQE_DIR/docs/blog/"*.md "$HERE/src/content/blog/"
+cp "$SQE_DIR/docs/blog/images/"* "$HERE/src/content/blog/images/" 2>/dev/null || echo "  (warn: no blog images)"
+
 # --- 3. matrix filter -------------------------------------------------------
 mkdir -p "$HERE/src/data"
 node "$HERE/scripts/filter-matrix.mjs" \
@@ -53,7 +60,7 @@ node "$HERE/scripts/filter-matrix.mjs" \
 echo "→ sanitizing synced copies"
 SANITIZE_FILES=()
 while IFS= read -r -d '' f; do SANITIZE_FILES+=("$f"); done < <(
-  find "$HERE/src/content/compare" "$HERE/src/content/ebook" -type f -name '*.md' -print0
+  find "$HERE/src/content/compare" "$HERE/src/content/ebook" "$HERE/src/content/blog" -type f -name '*.md' -print0
 )
 sed -i '' \
   -e 's#`crates/\(sqe-[a-z][a-z-]*\)[^`]*`#the \1 crate#g' \
@@ -78,6 +85,7 @@ sed -E -i '' \
   -e 's@\]\((\.\./)*trino-compatibility\.md\)@](/compare/trino)@g' \
   -e 's@\]\((\.\./)*duckdb-comparision\.md\)@](/compare/duckdb)@g' \
   -e 's@\]\((\.\./)*features\.md\)@](/compare/features)@g' \
+  -e 's@\]\((\.\./)*(blog/)?([0-9]{4}-[0-9]{2}-[0-9]{2}-[a-z0-9-]+)\.md(#[^)]*)?\)@](/blog/\3)@g' \
   -e 's@\]\(([A-Za-z0-9._/-]+\.md)(#[^)]*)?\)@](https://github.com/schubergphilis/sqe/blob/main/docs/\1)@g' \
   "${SANITIZE_FILES[@]}"
 
@@ -122,6 +130,7 @@ echo "→ leak-scan gate over staged publish files"
 bash "$HERE/scripts/leak-scan.sh" \
   "$HERE/src/content/compare" \
   "$HERE/src/content/ebook" \
+  "$HERE/src/content/blog" \
   "$HERE/src/data/iceberg-matrix.json"
 
 echo "✓ sync OK"
