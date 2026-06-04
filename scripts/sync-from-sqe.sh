@@ -71,6 +71,50 @@ sed -i '' \
 # (last rule strips Pandoc attribute blocks like `{#sec:auth}` / `{.unnumbered}`
 #  on headings — the ebook is authored for Pandoc; Astro renders them literally.)
 
+# Rewrite relative .md cross-links so nothing 404s on the website:
+#   the three first-class comparison docs -> their site routes;
+#   every other relative .md -> the public GitHub source tree.
+sed -E -i '' \
+  -e 's@\]\((\.\./)*trino-compatibility\.md\)@](/compare/trino)@g' \
+  -e 's@\]\((\.\./)*duckdb-comparision\.md\)@](/compare/duckdb)@g' \
+  -e 's@\]\((\.\./)*features\.md\)@](/compare/features)@g' \
+  -e 's@\]\(([A-Za-z0-9._/-]+\.md)(#[^)]*)?\)@](https://github.com/schubergphilis/sqe/blob/main/docs/\1)@g' \
+  "${SANITIZE_FILES[@]}"
+
+# --- 3c. curate compare docs (drop dated changelog noise; keep the matrices) -
+# trino/features are rendered as current-state reference pages. Strip the dated
+# "Items shipped" changelog sections and stale dated blockquotes so the page
+# shows the matrix, not the engineering log. The .astro wrappers add a fresh
+# "current as of" stamp.
+echo "→ curating compare docs (current-state)"
+for f in "$HERE/src/content/compare/trino.md" "$HERE/src/content/compare/features.md"; do
+  [[ -f "$f" ]] || continue
+  tmp="$f.tmp"
+  # (1) drop H2/H3+ sections whose heading is a dated changelog / roadmap log
+  awk '
+    /^#{2,6} / {
+      match($0, /^#+/); lvl = RLENGTH;
+      if (skip && lvl <= skiplvl) skip = 0;
+      if (!skip && $0 ~ /(Items shipped|Engine Limitations & Roadmap)/) { skip = 1; skiplvl = lvl }
+    }
+    { if (!skip) print }
+  ' "$f" > "$tmp" && mv "$tmp" "$f"
+  # (2) drop blockquote paragraphs carrying a date (stale "last updated" / "update" notes)
+  awk '
+    function flush() { if (buf != "") { if (!hd) printf "%s", buf; buf = ""; hd = 0 } }
+    /^>/ { buf = buf $0 ORS; if ($0 ~ /20[0-9][0-9]-[0-9][0-9]/) hd = 1; next }
+    { flush(); print }
+    END { flush() }
+  ' "$f" > "$tmp" && mv "$tmp" "$f"
+  # (3) drop an inline "Items shipped …:" lead-in + its bullet list (dated changelog)
+  awk '
+    /^Items shipped/ { sk = 1; next }
+    sk && /^$/ { sk = 0; print; next }
+    sk { next }
+    { print }
+  ' "$f" > "$tmp" && mv "$tmp" "$f"
+done
+
 # --- 4. leak-scan gate (BLOCKING) -------------------------------------------
 # Delegates to the shared gate (single source of truth, also run in CI).
 # Any hit aborts the sync — nothing is published until the copies are sanitized.

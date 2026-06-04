@@ -1,7 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import MonoEyebrow from '../../components/MonoEyebrow.astro';
-import MarkerBar from '../../components/MarkerBar.astro';
+import SectionHeading from '../../components/SectionHeading.astro';
+import AsOf from '../../components/AsOf.astro';
 import { getEntry, render } from 'astro:content';
 
 const entry = await getEntry('compare', 'features');
@@ -14,18 +14,22 @@ const { Content } = await render(entry);
 >
   <section class="section">
     <div class="container doc">
-      <header class="doc__head">
-        <MonoEyebrow text="Comparison" />
-        <MarkerBar />
-        <p class="doc__crumb"><a href="/compare/iceberg">Iceberg matrix</a> · <a href="/compare/trino">vs Trino</a> · <a href="/compare/duckdb">vs DuckDB</a></p>
-      </header>
+      <SectionHeading eyebrow="Comparison" title="SQL feature comparison" />
+      <AsOf />
+      <p class="lead">
+        SQE runs on <strong>Apache DataFusion 53.1</strong>, so the standard SQL surface — windows,
+        aggregates, joins, CTEs, set operations — comes for free. SQE adds multi-catalog
+        integration, pluggable auth, distributed execution, Iceberg DML, and a single-binary
+        embedded mode. Here it is side by side with Trino, Spark SQL, and DuckDB.
+      </p>
+      <p class="crumb"><a href="/compare/iceberg">Iceberg matrix</a> · <a href="/compare/trino">vs Trino</a> · <a href="/compare/duckdb">vs DuckDB</a></p>
       <article class="prose"><Content /></article>
     </div>
   </section>
 </BaseLayout>
 
 <style>
-  .doc { max-width: 880px; }
-  .doc__head { margin-bottom: 28px; }
-  .doc__crumb { font-size: 0.9rem; color: var(--text-muted); margin: 8px 0 0; }
+  .doc { max-width: 900px; }
+  .lead { font-size: 1.1rem; color: var(--text); max-width: 72ch; }
+  .crumb { font-size: 0.9rem; color: var(--text-muted); margin: 8px 0 6px; }
 </style>

@@ -43,6 +43,16 @@ The **real** safety guarantee is the gate over the **synced source markdown** (r
   (Jacob Verhoeks & Rafael Herrero) and frames the sovereign-data-platform vision — a deliberate
   divergence from the spec's "no SBP naming" rule, per direct request. SBP naming stays out of the
   nav/footer *chrome*; it lives in About page content only.
+- **`src/pages/log.astro`** is hand-authored: a "current state" snapshot + a curated milestone
+  timeline + a **verified open roadmap** (items already shipped — OPA/Cedar, Azure/GCS, map-aggregates
+  — are deliberately excluded). Update by hand as the project moves.
+- **`src/pages/compare/trino.astro`** and **`compare/features.astro`** still render the synced
+  markdown matrices, but the sync script now **trims the dated "Items shipped" changelog / "Engine
+  Limitations & Roadmap" sections and stale dated blockquotes**, and the pages add a curated header +
+  a **"Current as of <date>"** stamp (`src/components/AsOf.astro` — one place to bump the date).
+- The sync also **rewrites relative `.md` cross-links** so nothing 404s: the three comparison docs →
+  their site routes, everything else → the public GitHub source tree. (Link *text* may still read like
+  a filename; the target is correct.)
 - The sync sanitizer also strips Pandoc heading attributes (`{#sec:…}`) the ebook chapters carry,
   since Astro renders them literally. Note: Pandoc cross-reference links (`](#sec:…)`) in chapters
   point at anchors that don't exist in the web render — a minor read-online limitation.

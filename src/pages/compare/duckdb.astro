@@ -3,6 +3,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import SectionHeading from '../../components/SectionHeading.astro';
 import CompareTable from '../../components/CompareTable.astro';
 import FeatureGrid from '../../components/FeatureGrid.astro';
+import AsOf from '../../components/AsOf.astro';
 
 // Curated comparison (derived from the synced duckdb-comparision source doc).
 // The raw source is an internal audit/roadmap; this page keeps the
@@ -52,6 +53,7 @@ const gaps = [
   <section class="section">
     <div class="container doc">
       <SectionHeading eyebrow="Comparison" title="SQE vs DuckDB" />
+      <AsOf />
       <p class="lead">
         The goal isn’t to <em>be</em> DuckDB. SQE is the Iceberg-first analytical engine that runs
         both as an embedded single binary <strong>and</strong> as a distributed cluster with OIDC
