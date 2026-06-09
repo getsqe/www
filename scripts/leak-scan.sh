@@ -9,7 +9,9 @@
 # and must NOT count as leaks. Exits 1 on any hit (prints file:line), 0 if clean.
 set -euo pipefail
 
-LEAK_RE='[0-9]{12}|chore/|feat/|crates/sqe-|eu-(central|west)|amazonaws|MR !'
+# jacobadmin/jacobbuilder matched specifically (NOT bare "jacob") so the author
+# byline "Jacob Verhoeks" in blog/ebook content is not a false hit.
+LEAK_RE='[0-9]{12}|chore/|feat/|crates/sqe-|eu-(central|west)|amazonaws|MR !|sbp\.gitlab|gitlab\.schubergphilis|vpf-data-ai|jacobadmin|jacobbuilder'
 ALLOWLIST_SED='s#crates/sqe-cli##g; s#crates/sqe-coordinator##g'
 
 if [[ $# -eq 0 ]]; then
