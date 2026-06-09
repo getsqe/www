@@ -1,0 +1,97 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Terminal from '../../components/Terminal.astro';
+import { getCollection, render } from 'astro:content';
+import type { GetStaticPaths } from 'astro';
+import { allQuickstarts, docsUrl, repoUrl } from '../../data/quickstarts';
+
+export const getStaticPaths = (async () => {
+  const goals = await getCollection('quickstartGoals');
+  const outputs = await getCollection('quickstartOutput');
+  const outById = new Map(outputs.map((o) => [o.id, o]));
+  return goals.map((g) => {
+    const meta = allQuickstarts.find((q) => q.name === g.id) ?? { name: g.id, title: g.id, blurb: '' };
+    return {
+      params: { name: g.id },
+      props: { goalsEntry: g, outputEntry: outById.get(g.id) ?? null, meta },
+    };
+  });
+}) satisfies GetStaticPaths;
+
+const { goalsEntry, outputEntry, meta } = Astro.props;
+const { Content: Goals } = await render(goalsEntry);
+const Output = outputEntry ? (await render(outputEntry)).Content : null;
+---
+<BaseLayout title={`${meta.title} — SQE quickstart | getsqe.com`} description={meta.blurb} darkHeader>
+  <section class="qd-hero">
+    <div class="container">
+      <p class="qd-crumb"><a href="/quickstart">← All quickstarts</a></p>
+      <span class="qd-eyebrow">Quickstart{meta.experimental ? ' · experimental' : ''}</span>
+      <h1>{meta.title}</h1>
+      <div class="qd-goals prose"><Goals /></div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container qd-body">
+      <div class="qd-block">
+        <h2 class="qd-h">How to run it</h2>
+        <p class="qd-what">{meta.blurb}</p>
+        <Terminal title={`quickstart/${meta.name}`}>
+          <span class="t-line t-cmd">cd quickstart/{meta.name}</span>
+          <span class="t-line t-cmd">cp .env.example .env &amp;&amp; ./run.sh</span>
+        </Terminal>
+      </div>
+
+      {Output && (
+        <div class="qd-block">
+          <h2 class="qd-h">What you get</h2>
+          <p class="qd-what">Real output, captured from a clean run:</p>
+          <div class="qd-result prose"><Output /></div>
+        </div>
+      )}
+
+      <div class="qd-cta">
+        <a class="qd-btn qd-btn--primary" href={docsUrl(meta.name)}>Full guide →</a>
+        <a class="qd-btn" href={repoUrl(meta.name)} rel="noopener">Code ↗</a>
+        <a class="qd-btn qd-btn--ghost" href="/quickstart">All quickstarts</a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .qd-hero {
+    background: var(--space-gray); color: #fff;
+    padding-block: clamp(40px, 6vw, 72px);
+    background-image: radial-gradient(800px 360px at 82% -10%, rgba(30, 232, 237, 0.1), transparent 60%);
+  }
+  .qd-crumb { font-size: 0.9rem; margin: 0 0 18px; }
+  .qd-crumb a { color: var(--turquoise); }
+  .qd-eyebrow { font-family: var(--font-mono); color: var(--turquoise); font-size: 0.82rem; letter-spacing: 0.1em; font-weight: 600; }
+  .qd-hero h1 { color: #fff; margin: 10px 0 14px; }
+  .qd-goals { color: rgba(255, 255, 255, 0.85); max-width: 64ch; }
+  .qd-goals :global(p) { color: rgba(255, 255, 255, 0.85); }
+  .qd-goals :global(a) { color: var(--turquoise); }
+  .qd-goals :global(code) { font-family: var(--font-mono); font-size: 0.85em; background: rgba(255,255,255,0.1); padding: 0.1em 0.35em; border-radius: 4px; color: #fff; }
+
+  .qd-body { max-width: 820px; }
+  .qd-block { margin-bottom: 40px; }
+  .qd-h { font-size: 1.3rem; margin: 0 0 8px; }
+  .qd-what { color: var(--text-muted); margin: 0 0 16px; }
+
+  .qd-result :global(h2) { font-size: 1rem; font-family: var(--font-mono); color: var(--sqe-blue); margin: 22px 0 8px; }
+  .qd-result :global(h1) { font-size: 1.1rem; margin: 0 0 10px; }
+  .qd-result :global(pre) {
+    background: var(--midnight); color: #e6edf3; border: 1px solid rgba(30, 232, 237, 0.18);
+    border-radius: 10px; padding: 16px; overflow-x: auto; font-size: 0.84rem; line-height: 1.5;
+  }
+  .qd-result :global(pre code) { font-family: var(--font-mono); }
+  .qd-result :global(p) { color: var(--text-muted); }
+
+  .qd-cta { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; padding-top: 8px; border-top: 1px solid var(--border); }
+  .qd-btn { font-weight: 700; font-size: 0.95rem; padding: 9px 16px; border-radius: 8px; border: 1px solid var(--border); }
+  .qd-btn--primary { background: var(--sqe-blue); color: #fff; border-color: var(--sqe-blue); }
+  .qd-btn--primary:hover { text-decoration: none; }
+  .qd-btn--ghost { color: var(--text-muted); }
+</style>
