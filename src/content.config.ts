@@ -22,4 +22,12 @@ const blog = defineCollection({
   }),
 });
 
-export const collections = { compare, ebook, blog };
+// Synced + sanitized quickstart content: README lead (goals) and captured OUTPUT (result).
+const quickstartGoals = defineCollection({
+  loader: glob({ pattern: '*.md', base: './src/content/quickstart-goals' }),
+});
+const quickstartOutput = defineCollection({
+  loader: glob({ pattern: '*.md', base: './src/content/quickstart-output' }),
+});
+
+export const collections = { compare, ebook, blog, quickstartGoals, quickstartOutput };
