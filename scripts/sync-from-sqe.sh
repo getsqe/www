@@ -98,6 +98,11 @@ sed -i '' \
   -e 's#MR ![0-9][0-9]*#an earlier change#g' \
   -e 's#feat/[A-Za-z0-9._-][A-Za-z0-9._-]*#a feature branch#g' \
   -e 's#chore/[A-Za-z0-9._-][A-Za-z0-9._-]*#a maintenance branch#g' \
+  -e 's#https*://sbp\.gitlab\.schubergphilis\.com[A-Za-z0-9._/-]*#https://github.com/schubergphilis/sqe#g' \
+  -e 's#sbp\.gitlab\.schubergphilis\.com#github.com#g' \
+  -e 's#vpf-data-ai/chameleon/applications/sqlengine#schubergphilis/sqe#g' \
+  -e 's#jacobadmin#quickstart-admin#g' \
+  -e 's#jacobbuilder#quickstart-builder#g' \
   -e 's# *{[#.][^}]*}##g' \
   "${SANITIZE_FILES[@]}"
 # (last rule strips Pandoc attribute blocks like `{#sec:auth}` / `{.unnumbered}`
