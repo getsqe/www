@@ -44,13 +44,15 @@ const REPO_QS = 'https://github.com/schubergphilis/sqe/tree/main/quickstart';
             {g.items.map((it) => (
               <article class="qs-card">
                 <div class="qs-card__top">
-                  <h3 class="qs-card__title">{it.title}</h3>
+                  <h3 class="qs-card__title">
+                    <a class="qs-card__link" href={`/quickstart/${it.name}`}>{it.title}</a>
+                  </h3>
                   {it.experimental && <span class="qs-tag">experimental</span>}
                 </div>
                 <p class="qs-card__blurb">{it.blurb}</p>
                 <div class="qs-card__links">
-                  <a class="qs-link qs-link--primary" href={`/quickstart/${it.name}`}>Walk-through →</a>
-                  <a class="qs-link" href={`${REPO_QS}/${it.name}/`} rel="noopener">Code ↗</a>
+                  <span class="qs-link qs-link--primary">Walk-through →</span>
+                  <a class="qs-link qs-link--code" href={`${REPO_QS}/${it.name}/`} rel="noopener">Code ↗</a>
                 </div>
               </article>
             ))}
@@ -84,19 +86,27 @@ const REPO_QS = 'https://github.com/schubergphilis/sqe/tree/main/quickstart';
 
   .qs-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
   .qs-card {
+    position: relative;
     border: 1px solid var(--border); border-radius: var(--radius); padding: 20px;
     display: flex; flex-direction: column; gap: 10px; background: #fff;
     border-top: 3px solid var(--sqe-blue);
-    transition: box-shadow 0.15s ease, transform 0.15s ease;
+    transition: box-shadow 0.15s ease, transform 0.15s ease, border-color 0.15s ease;
   }
-  .qs-card:hover { box-shadow: 0 12px 32px -18px rgba(2, 12, 23, 0.4); transform: translateY(-1px); }
+  .qs-card:hover { box-shadow: 0 12px 32px -18px rgba(2, 12, 23, 0.4); transform: translateY(-1px); border-color: var(--sqe-blue); }
   .qs-card__top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
   .qs-card__title { font-size: 1.02rem; margin: 0; }
-  .qs-tag { font-family: var(--font-mono); font-size: 0.68rem; color: var(--text-muted); border: 1px solid var(--border); border-radius: 999px; padding: 2px 8px; white-space: nowrap; }
+  /* Whole card is a link to the walk-through: the title link stretches to cover
+     the card. The Code ↗ link sits above it (z-index) so it stays clickable. */
+  .qs-card__link { color: inherit; }
+  .qs-card__link:hover { text-decoration: none; color: var(--sqe-blue); }
+  .qs-card__link::after { content: ''; position: absolute; inset: 0; border-radius: var(--radius); }
+  .qs-card:hover .qs-card__title { color: var(--sqe-blue); }
+  .qs-tag { position: relative; z-index: 1; font-family: var(--font-mono); font-size: 0.68rem; color: var(--text-muted); border: 1px solid var(--border); border-radius: 999px; padding: 2px 8px; white-space: nowrap; }
   .qs-card__blurb { color: var(--text-muted); font-size: 0.88rem; margin: 0; flex: 1; }
   .qs-card__links { display: flex; gap: 16px; align-items: center; }
   .qs-link { font-weight: 700; font-size: 0.9rem; }
   .qs-link--primary { color: var(--sqe-blue); }
+  .qs-link--code { position: relative; z-index: 1; }
   .qs-foot { color: var(--text-muted); margin-top: 8px; }
 
   @media (max-width: 900px) { .qs-grid { grid-template-columns: repeat(2, 1fr); } }
