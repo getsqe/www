@@ -1,0 +1,154 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Terminal from '../components/Terminal.astro';
+
+const GITHUB = 'https://github.com/schubergphilis/sqe';
+const DOCS_INDEX = 'https://docs.getsqe.com/quickstart/';
+const DOCS_QS = 'https://docs.getsqe.com/quickstart';
+const REPO_QS = 'https://github.com/schubergphilis/sqe/tree/main/quickstart';
+
+// Curated list of the runnable quickstarts (hand-maintained, sanitized — no
+// account ids, regions, internal crate paths). Mirrors the docs Quickstart
+// index. Each card links to its docs guide (live) and the repo dir (resolves
+// once the public quickstart/ dir is published).
+const groups = [
+  {
+    key: 'Catalog + authentication',
+    blurb: 'Full Iceberg catalogs with real identity, in local Docker.',
+    items: [
+      { name: 'polaris-keycloak-client-id', title: 'Polaris + Keycloak (client credentials)', blurb: "SQE mints each user's token via the OIDC password grant, then passes it through to Polaris." },
+      { name: 'polaris-keycloak-user-token', title: 'Polaris + Keycloak (user token)', blurb: 'Clients bring a pre-minted Keycloak token; SQE validates it and passes it through.' },
+      { name: 'nessie', title: 'Project Nessie', blurb: 'Nessie as the Iceberg REST catalog — auth-less, anonymous SQE.' },
+      { name: 'unity-oss', title: 'Unity Catalog OSS', blurb: 'Unity Catalog OSS over Iceberg REST (read-only; catalog-browse demo).' },
+    ],
+  },
+  {
+    key: 'AWS managed catalogs',
+    blurb: 'Managed AWS catalogs, bootstrapped and torn down with CDK.',
+    items: [
+      { name: 'aws-s3-tables', title: 'AWS S3 Tables', blurb: 'Managed Iceberg; CDK bootstrap + teardown; SQE creates the namespace and round-trips.' },
+      { name: 'aws-glue', title: 'AWS Glue Data Catalog', blurb: 'Glue + S3; SQE creates the database and does a full create / write / read round-trip.' },
+      { name: 'glue-lake-formation', title: 'AWS Glue + Lake Formation', blurb: 'Lake-Formation-governed Glue: denied until an explicit LF grant, then succeeds.' },
+    ],
+  },
+  {
+    key: 'Embedded',
+    blurb: 'One binary, no server — DuckDB-shaped local SQL.',
+    items: [
+      { name: 'embedded-files', title: 'Query local & remote files', blurb: 'Read CSV / JSON / Parquet directly with the read_* table functions. No server, no catalog.' },
+      { name: 'embedded-sqlite-catalog', title: 'Persistent local catalog (SQLite)', blurb: 'A persistent, SQLite-backed Iceberg catalog on local disk.' },
+      { name: 'attach-catalogs', title: 'Attach multiple catalogs', blurb: 'Attach several persistent catalogs in one session and JOIN across them.' },
+      { name: 'quack', title: 'Quack (DuckDB wire protocol)', blurb: "SQE's DuckDB Quack RPC endpoint, both directions.", experimental: true },
+    ],
+  },
+  {
+    key: 'Operations',
+    blurb: 'Run SQE like you mean it.',
+    items: [
+      { name: 'observability', title: 'Observability: metrics + Grafana', blurb: "Scrape SQE's Prometheus metrics with VictoriaMetrics and visualise them in Grafana." },
+    ],
+  },
+  {
+    key: 'Benchmarks',
+    blurb: 'Measure it yourself.',
+    items: [
+      { name: 'benchmark', title: 'TPC-H / TPC-DS / SSB', blurb: 'Generate, load, and run the TPC suites against SQE with per-query timings.' },
+    ],
+  },
+];
+---
+<BaseLayout
+  title="Quickstart — run SQE end to end | getsqe.com"
+  description="Self-contained, validated quickstarts for every catalog and deployment shape: Polaris + Keycloak, AWS S3 Tables / Glue / Lake Formation, Nessie, Unity OSS, embedded mode, Quack, observability, and benchmarks. Each runs end to end and captures real output."
+  darkHeader
+>
+  <section class="qs-hero">
+    <div class="container">
+      <span class="qs-eyebrow">Get started</span>
+      <h1>Run SQE end to end.</h1>
+      <p class="qs-lede">
+        Each quickstart is a self-contained directory that brings up the whole stack, runs real
+        queries, and captures the output. Clone the repo, pick one, and run it — every option below
+        is validated from a clean state.
+      </p>
+      <div class="qs-term">
+        <Terminal title="run a quickstart">
+          <span class="t-line t-comment"># clone, pick a quickstart, run it end to end</span>
+          <span class="t-line t-cmd">git clone {GITHUB}</span>
+          <span class="t-line t-cmd">cd sqe/quickstart/polaris-keycloak-client-id</span>
+          <span class="t-line t-cmd">cp .env.example .env &amp;&amp; ./run.sh</span>
+        </Terminal>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      {groups.map((g) => (
+        <div class="qs-group">
+          <div class="qs-group__head">
+            <h2 class="qs-group__title">{g.key}</h2>
+            <p class="qs-group__blurb">{g.blurb}</p>
+          </div>
+          <div class="qs-grid">
+            {g.items.map((it) => (
+              <article class="qs-card">
+                <div class="qs-card__top">
+                  <h3 class="qs-card__title">{it.title}</h3>
+                  {it.experimental && <span class="qs-tag">experimental</span>}
+                </div>
+                <p class="qs-card__blurb">{it.blurb}</p>
+                <div class="qs-card__links">
+                  <a class="qs-link qs-link--primary" href={`${DOCS_QS}/${it.name}.html`}>Guide →</a>
+                  <a class="qs-link" href={`${REPO_QS}/${it.name}/`} rel="noopener">Code ↗</a>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      ))}
+      <p class="qs-foot">
+        Full walkthroughs, config, and captured output live in the
+        <a href={DOCS_INDEX}>docs</a> — or browse every quickstart in the
+        <a href={`${REPO_QS}/`} rel="noopener">source repository</a>.
+      </p>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .qs-hero {
+    background: var(--space-gray); color: #fff;
+    padding-block: clamp(48px, 7vw, 88px);
+    background-image: radial-gradient(800px 360px at 82% -10%, rgba(30, 232, 237, 0.1), transparent 60%);
+  }
+  .qs-eyebrow { font-family: var(--font-mono); color: var(--turquoise); font-size: 0.82rem; letter-spacing: 0.1em; font-weight: 600; }
+  .qs-hero h1 { color: #fff; margin: 12px 0 16px; }
+  .qs-lede { color: rgba(255, 255, 255, 0.82); max-width: 60ch; font-size: 1.1rem; }
+  .qs-term { margin-top: 30px; max-width: 720px; }
+
+  .qs-group { margin-bottom: 44px; }
+  .qs-group__head { margin-bottom: 18px; }
+  .qs-group__title { font-size: 1.35rem; margin: 0 0 4px; }
+  .qs-group__blurb { color: var(--text-muted); margin: 0; font-size: 0.95rem; }
+
+  .qs-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  .qs-card {
+    border: 1px solid var(--border); border-radius: var(--radius); padding: 20px;
+    display: flex; flex-direction: column; gap: 10px; background: #fff;
+    border-top: 3px solid var(--sqe-blue);
+    transition: box-shadow 0.15s ease, transform 0.15s ease;
+  }
+  .qs-card:hover { box-shadow: 0 12px 32px -18px rgba(2, 12, 23, 0.4); transform: translateY(-1px); }
+  .qs-card__top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+  .qs-card__title { font-size: 1.02rem; margin: 0; }
+  .qs-tag { font-family: var(--font-mono); font-size: 0.68rem; color: var(--text-muted); border: 1px solid var(--border); border-radius: 999px; padding: 2px 8px; white-space: nowrap; }
+  .qs-card__blurb { color: var(--text-muted); font-size: 0.88rem; margin: 0; flex: 1; }
+  .qs-card__links { display: flex; gap: 16px; align-items: center; }
+  .qs-link { font-weight: 700; font-size: 0.9rem; }
+  .qs-link--primary { color: var(--sqe-blue); }
+  .qs-foot { color: var(--text-muted); margin-top: 8px; }
+
+  @media (max-width: 900px) { .qs-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 560px) { .qs-grid { grid-template-columns: 1fr; } }
+</style>
