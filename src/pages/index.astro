@@ -5,6 +5,7 @@ import SectionHeading from '../components/SectionHeading.astro';
 import FeatureGrid from '../components/FeatureGrid.astro';
 import CompareTable from '../components/CompareTable.astro';
 import matrix from '../data/iceberg-matrix.json';
+import perf from '../data/performance.json';
 
 const DOCS = 'https://docs.getsqe.com';
 const GITHUB = 'https://github.com/schubergphilis/sqe';
@@ -170,6 +171,26 @@ sqe> SELECT * FROM test_warehouse.default.my_table LIMIT 10;`}</code></pre>
       </div>
     </div>
   </section>
+
+  <!-- PERFORMANCE TEASER -->
+  <section class="section pf-teaser-sec" id="performance">
+    <div class="container">
+      <SectionHeading eyebrow="Performance" title="Six of seven suites, faster than Trino." center />
+      <div class="pf-teaser">
+        <div class="pf-teaser__stat"><b>{perf.headline.suitesWon}</b><span>suites vs {perf.headline.vsTrino}</span></div>
+        <div class="pf-teaser__stat"><b>{perf.headline.queriesPass}</b><span>queries pass, validated</span></div>
+        <div class="pf-teaser__stat"><b>18.5×</b><span>top speedup</span></div>
+      </div>
+      <p class="pf-teaser__cta"><a href="/performance">See the performance leaps →</a></p>
+    </div>
+  </section>
+  <style>
+    .pf-teaser { display:flex; gap:18px; justify-content:center; flex-wrap:wrap; margin:8px 0 18px; }
+    .pf-teaser__stat { text-align:center; min-width:130px; }
+    .pf-teaser__stat b { display:block; font-size:1.9rem; color: var(--sqe-blue); font-weight:800; }
+    .pf-teaser__stat span { font-size:0.84rem; color: var(--text-muted); }
+    .pf-teaser__cta { text-align:center; font-weight:700; }
+  </style>
 
   <!-- RECENTLY SHIPPED -->
   <section class="shipped">

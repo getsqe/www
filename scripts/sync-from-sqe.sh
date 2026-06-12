@@ -76,6 +76,15 @@ node "$HERE/scripts/filter-matrix.mjs" \
   "$SQE_DIR/docs/iceberg-matrix-state.json" \
   "$HERE/src/data/iceberg-matrix.json"
 
+# --- 3a. performance showcase data + benchmark charts -----------------------
+echo "→ syncing performance.json + benchmark charts"
+cp "$SQE_DIR/docs/performance.json" "$HERE/src/data/performance.json"
+mkdir -p "$HERE/public/perf"
+for c in tpch tpcds ssb clickbench tpcc tpce tpcbb; do
+  cp "$SQE_DIR/docs/benchmark/charts/$c-cross-scale.png" "$HERE/public/perf/" 2>/dev/null || echo "  (warn: no $c-cross-scale.png)"
+done
+cp "$SQE_DIR/docs/ebook/diagrams/rendered/13-distributed-execution.svg" "$HERE/public/perf/distributed-execution.svg" 2>/dev/null || echo "  (warn: no distributed svg)"
+
 # --- 3b. sanitize synced copies (deterministic, re-run safe) ----------------
 # Redacts internal detail from the SYNCED COPIES only (source untouched).
 # Designed to preserve readability: internal crate paths become human module
@@ -163,6 +172,7 @@ bash "$HERE/scripts/leak-scan.sh" \
   "$HERE/src/content/blog" \
   "$HERE/src/content/quickstart-goals" \
   "$HERE/src/content/quickstart-output" \
-  "$HERE/src/data/iceberg-matrix.json"
+  "$HERE/src/data/iceberg-matrix.json" \
+  "$HERE/src/data/performance.json"
 
 echo "✓ sync OK"
