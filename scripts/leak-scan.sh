@@ -11,8 +11,11 @@ set -euo pipefail
 
 # jacobadmin/jacobbuilder matched specifically (NOT bare "jacob") so the author
 # byline "Jacob Verhoeks" in blog/ebook content is not a false hit.
-LEAK_RE='[0-9]{12}|chore/|feat/|crates/sqe-|eu-(central|west)|amazonaws|MR !|sbp\.gitlab|gitlab\.schubergphilis|vpf-data-ai|jacobadmin|jacobbuilder'
-ALLOWLIST_SED='s#crates/sqe-cli##g; s#crates/sqe-coordinator##g'
+# The 12-digit account-id rule is boundary-anchored so it does not substring-match
+# inside longer digit runs (e.g. 19-digit Iceberg snapshot ids). The canonical
+# placeholder account ids 123456789012 / 000000000000 are allowlisted (stripped).
+LEAK_RE='(^|[^0-9])[0-9]{12}([^0-9]|$)|chore/|feat/|crates/sqe-|eu-(central|west)|amazonaws|MR !|sbp\.gitlab|gitlab\.schubergphilis|vpf-data-ai|jacobadmin|jacobbuilder'
+ALLOWLIST_SED='s#crates/sqe-cli##g; s#crates/sqe-coordinator##g; s#123456789012##g; s#000000000000##g'
 
 if [[ $# -eq 0 ]]; then
   echo "usage: leak-scan.sh <dir-or-file> ..." >&2
