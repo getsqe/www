@@ -25,25 +25,25 @@ echo "→ syncing from $SQE_DIR"
 
 # --- 1. comparison docs -----------------------------------------------------
 mkdir -p "$HERE/src/content/compare"
-cp "$SQE_DIR/docs/trino-compatibility.md"  "$HERE/src/content/compare/trino.md"
-cp "$SQE_DIR/docs/duckdb-comparision.md"   "$HERE/src/content/compare/duckdb.md"
-cp "$SQE_DIR/docs/features.md"             "$HERE/src/content/compare/features.md"
+cp "$SQE_DIR/docs/site/compare/trino-compatibility.md"  "$HERE/src/content/compare/trino.md"
+cp "$SQE_DIR/docs/site/compare/duckdb-comparision.md"   "$HERE/src/content/compare/duckdb.md"
+cp "$SQE_DIR/docs/site/compare/features.md"             "$HERE/src/content/compare/features.md"
 
 # --- 2. ebook chapters + artifacts ------------------------------------------
 mkdir -p "$HERE/src/content/ebook" "$HERE/public/downloads"
 rm -f "$HERE/src/content/ebook"/*.md
-cp "$SQE_DIR/docs/ebook/chapters/"*.md "$HERE/src/content/ebook/"
+cp "$SQE_DIR/docs/site/ebook/chapters/"*.md "$HERE/src/content/ebook/"
 # Diagrams referenced by chapters (relative paths resolve from the md location).
 mkdir -p "$HERE/src/content/ebook/diagrams/rendered"
-cp "$SQE_DIR/docs/ebook/diagrams/rendered/"*.svg "$HERE/src/content/ebook/diagrams/rendered/" 2>/dev/null || echo "  (warn: no rendered svgs)"
-cp "$SQE_DIR/docs/ebook/build/sovereign-by-design.pdf"  "$HERE/public/downloads/" 2>/dev/null || echo "  (warn: pdf not found)"
-cp "$SQE_DIR/docs/ebook/build/sovereign-by-design.epub" "$HERE/public/downloads/" 2>/dev/null || echo "  (warn: epub not found)"
+cp "$SQE_DIR/docs/site/ebook/diagrams/rendered/"*.svg "$HERE/src/content/ebook/diagrams/rendered/" 2>/dev/null || echo "  (warn: no rendered svgs)"
+cp "$SQE_DIR/docs/site/ebook/build/sovereign-by-design.pdf"  "$HERE/public/downloads/" 2>/dev/null || echo "  (warn: pdf not found)"
+cp "$SQE_DIR/docs/site/ebook/build/sovereign-by-design.epub" "$HERE/public/downloads/" 2>/dev/null || echo "  (warn: epub not found)"
 
 # --- 2b. blog posts + images ------------------------------------------------
 mkdir -p "$HERE/src/content/blog/images"
 rm -f "$HERE/src/content/blog"/*.md
-cp "$SQE_DIR/docs/blog/"*.md "$HERE/src/content/blog/"
-cp "$SQE_DIR/docs/blog/images/"* "$HERE/src/content/blog/images/" 2>/dev/null || echo "  (warn: no blog images)"
+cp "$SQE_DIR/docs/site/blog/"*.md "$HERE/src/content/blog/"
+cp "$SQE_DIR/docs/site/blog/images/"* "$HERE/src/content/blog/images/" 2>/dev/null || echo "  (warn: no blog images)"
 
 # --- 2c. quickstart goals (README lead) + result (OUTPUT) --------------------
 # For each quickstart, extract the README lead (prose between the H1 and the
@@ -73,24 +73,29 @@ done
 # --- 3. matrix filter -------------------------------------------------------
 mkdir -p "$HERE/src/data"
 node "$HERE/scripts/filter-matrix.mjs" \
-  "$SQE_DIR/docs/iceberg-matrix-state.json" \
+  "$SQE_DIR/docs/evidence/iceberg-matrix-state.json" \
   "$HERE/src/data/iceberg-matrix.json"
 
 # --- 3a. performance showcase data + benchmark charts -----------------------
 echo "→ syncing performance.json + benchmark charts"
-cp "$SQE_DIR/docs/performance.json" "$HERE/src/data/performance.json"
+cp "$SQE_DIR/docs/evidence/performance.json" "$HERE/src/data/performance.json"
 mkdir -p "$HERE/public/perf"
 for c in tpch tpcds ssb clickbench tpcc tpce tpcbb; do
-  cp "$SQE_DIR/docs/benchmark/charts/$c-cross-scale.png" "$HERE/public/perf/" 2>/dev/null || echo "  (warn: no $c-cross-scale.png)"
+  cp "$SQE_DIR/docs/evidence/benchmark/charts/$c-cross-scale.png" "$HERE/public/perf/" 2>/dev/null || echo "  (warn: no $c-cross-scale.png)"
 done
-cp "$SQE_DIR/docs/ebook/diagrams/rendered/13-distributed-execution.svg" "$HERE/public/perf/distributed-execution.svg" 2>/dev/null || echo "  (warn: no distributed svg)"
+cp "$SQE_DIR/docs/site/ebook/diagrams/rendered/13-distributed-execution.svg" "$HERE/public/perf/distributed-execution.svg" 2>/dev/null || echo "  (warn: no distributed svg)"
+node "$HERE/scripts/aggregate-benchmarks.mjs" "$SQE_DIR/benchmarks/results" "$HERE/src/data/perf-series.json"
 
-# --- 3b. sanitize synced copies (deterministic, re-run safe) ----------------
-# Redacts internal detail from the SYNCED COPIES only (source untouched).
-# Designed to preserve readability: internal crate paths become human module
-# names, account ids / regions / endpoints become placeholders. Public crate
-# names (sqe-cli, sqe-coordinator) are not introduced here and are allowlisted
-# by the gate below.
+# --- 3b. cosmetic normalization of synced copies (deterministic, re-run safe) -
+# COSMETIC ONLY. Secrets/PII (account ids, personal IAM names, the internal
+# GitLab host, the monorepo path) are now fixed at SOURCE in docs/site -- the
+# SQE repo's scripts/leak-scan-site.sh enforces that -- so the security
+# redaction rules were retired from this sync. What remains is presentation
+# normalization that keeps internal traceability out of the public copies:
+# internal crate paths become human module names, regions/endpoints become
+# placeholders, and MR/branch refs become generic phrasing. (MR/branch
+# rewrites are slated to retire once design-note MR refs are backfilled to
+# permalinks.) The leak-scan gate below stays as the publish guard.
 echo "→ sanitizing synced copies"
 SANITIZE_FILES=()
 while IFS= read -r -d '' f; do SANITIZE_FILES+=("$f"); done < <(
@@ -99,7 +104,6 @@ while IFS= read -r -d '' f; do SANITIZE_FILES+=("$f"); done < <(
 sed -i '' \
   -e 's#`crates/\(sqe-[a-z][a-z-]*\)[^`]*`#the \1 crate#g' \
   -e 's#crates/\(sqe-[a-z][a-z-]*\)/[^ )`"]*#the \1 module#g' \
-  -e 's#[0-9]\{12\}#ACCOUNT_ID#g' \
   -e 's#eu-central-[0-9]#eu-example-1#g' \
   -e 's#eu-west-[0-9]#eu-example-1#g' \
   -e 's#glue\.[a-z0-9<>-]*\.amazonaws\.com#<glue-endpoint>#g' \
@@ -107,11 +111,6 @@ sed -i '' \
   -e 's#MR ![0-9][0-9]*#an earlier change#g' \
   -e 's#feat/[A-Za-z0-9._-][A-Za-z0-9._-]*#a feature branch#g' \
   -e 's#chore/[A-Za-z0-9._-][A-Za-z0-9._-]*#a maintenance branch#g' \
-  -e 's#https*://sbp\.gitlab\.schubergphilis\.com[A-Za-z0-9._/-]*#https://github.com/schubergphilis/sqe#g' \
-  -e 's#sbp\.gitlab\.schubergphilis\.com#github.com#g' \
-  -e 's#vpf-data-ai/chameleon/applications/sqlengine#schubergphilis/sqe#g' \
-  -e 's#jacobadmin#quickstart-admin#g' \
-  -e 's#jacobbuilder#quickstart-builder#g' \
   -e 's# *{[#.][^}]*}##g' \
   "${SANITIZE_FILES[@]}"
 # (last rule strips Pandoc attribute blocks like `{#sec:auth}` / `{.unnumbered}`
@@ -125,7 +124,7 @@ sed -E -i '' \
   -e 's@\]\((\.\./)*duckdb-comparision\.md\)@](/compare/duckdb)@g' \
   -e 's@\]\((\.\./)*features\.md\)@](/compare/features)@g' \
   -e 's@\]\((\.\./)*(blog/)?([0-9]{4}-[0-9]{2}-[0-9]{2}-[a-z0-9-]+)\.md(#[^)]*)?\)@](/blog/\3)@g' \
-  -e 's@\]\(([A-Za-z0-9._/-]+\.md)(#[^)]*)?\)@](https://github.com/schubergphilis/sqe/blob/main/docs/\1)@g' \
+  -e 's@\]\(([A-Za-z0-9._/-]+\.md)(#[^)]*)?\)@](https://github.com/schubergphilis/sqe/blob/main/docs/site/compare/\1)@g' \
   "${SANITIZE_FILES[@]}"
 
 # --- 3c. curate compare docs (drop dated changelog noise; keep the matrices) -
@@ -173,6 +172,7 @@ bash "$HERE/scripts/leak-scan.sh" \
   "$HERE/src/content/quickstart-goals" \
   "$HERE/src/content/quickstart-output" \
   "$HERE/src/data/iceberg-matrix.json" \
-  "$HERE/src/data/performance.json"
+  "$HERE/src/data/performance.json" \
+  "$HERE/src/data/perf-series.json"
 
 echo "✓ sync OK"
