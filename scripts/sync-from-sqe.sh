@@ -86,6 +86,16 @@ done
 cp "$SQE_DIR/docs/site/ebook/diagrams/rendered/13-distributed-execution.svg" "$HERE/public/perf/distributed-execution.svg" 2>/dev/null || echo "  (warn: no distributed svg)"
 node "$HERE/scripts/aggregate-benchmarks.mjs" "$SQE_DIR/benchmarks/results" "$HERE/src/data/perf-series.json"
 
+# --- 3d. authored website content (docs/site/web) ---------------------------
+# Structured copy is JSON (zero-dep to consume) -> src/data/; prose is markdown
+# -> src/content/web/. Single content home in the SQE repo; the Astro pages
+# import these directly. Both are gated by the leak-scan below.
+echo "→ syncing authored web content (landing/roadmap/compare-duckdb/quickstarts + about/performance)"
+mkdir -p "$HERE/src/data"
+cp "$SQE_DIR"/docs/site/web/*.json "$HERE/src/data/"
+mkdir -p "$HERE/src/content/web"
+cp "$SQE_DIR"/docs/site/web/*.md "$HERE/src/content/web/"
+
 # --- 3b. cosmetic normalization of synced copies (deterministic, re-run safe) -
 # COSMETIC ONLY. Secrets/PII (account ids, personal IAM names, the internal
 # GitLab host, the monorepo path) are now fixed at SOURCE in docs/site -- the
@@ -171,8 +181,13 @@ bash "$HERE/scripts/leak-scan.sh" \
   "$HERE/src/content/blog" \
   "$HERE/src/content/quickstart-goals" \
   "$HERE/src/content/quickstart-output" \
+  "$HERE/src/content/web" \
   "$HERE/src/data/iceberg-matrix.json" \
   "$HERE/src/data/performance.json" \
-  "$HERE/src/data/perf-series.json"
+  "$HERE/src/data/perf-series.json" \
+  "$HERE/src/data/landing.json" \
+  "$HERE/src/data/roadmap.json" \
+  "$HERE/src/data/compare-duckdb.json" \
+  "$HERE/src/data/quickstarts.json"
 
 echo "✓ sync OK"

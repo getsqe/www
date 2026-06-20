@@ -30,4 +30,9 @@ const quickstartOutput = defineCollection({
   loader: glob({ pattern: '*.md', base: './src/content/quickstart-output' }),
 });
 
-export const collections = { compare, ebook, blog, quickstartGoals, quickstartOutput };
+// Authored website prose synced from docs/site/web (about, performance).
+const web = defineCollection({
+  loader: glob({ pattern: '*.md', base: './src/content/web' }),
+});
+
+export const collections = { compare, ebook, blog, quickstartGoals, quickstartOutput, web };

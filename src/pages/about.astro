@@ -1,90 +1,27 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import MonoEyebrow from '../components/MonoEyebrow.astro';
-import MarkerBar from '../components/MarkerBar.astro';
+import { getEntry, render } from 'astro:content';
 
-const GITHUB = 'https://github.com/schubergphilis/sqe';
+// Authored prose synced from docs/site/web/about.md (single content home).
+// The markdown carries its own H1 + section headings, so this page renders it
+// directly rather than re-stating the copy in bespoke hero/credit markup.
+const entry = await getEntry('web', 'about');
+if (!entry) throw new Error('web/about.md not found — run `npm run sync`');
+const { Content } = await render(entry);
+const { title, description } = entry.data as { title?: string; description?: string };
 ---
 <BaseLayout
-  title="About SQE — Sovereign Query Engine"
-  description="SQE started as a fork of Trino with end-to-end authentication instead of service accounts. Built at Schuberg Philis by Jacob Verhoeks & Rafael Herrero, it's the open-source engine at the heart of a sovereign data platform."
+  title={title ?? 'About SQE — Sovereign Query Engine'}
+  description={description ?? "SQE started as a fork of Trino with end-to-end authentication instead of service accounts. Built at Schuberg Philis by Jacob Verhoeks & Rafael Herrero, it's the open-source engine at the heart of a sovereign data platform."}
   darkHeader
 >
-  <section class="about-hero">
-    <div class="container">
-      <span class="about-eyebrow">About SQE</span>
-      <h1>Make the query the identity.</h1>
-      <p class="about-lede">
-        SQE started as a fork of <strong>Trino</strong> with one stubborn idea: end-to-end
-        authentication instead of shared service accounts. Every query should run as the person
-        who issued it — not as <code>trino-coordinator</code>, not as a service principal.
-      </p>
-    </div>
-  </section>
-
   <section class="section">
     <div class="container about-body">
-      <div class="about-block">
-        <MonoEyebrow text="Origin" />
-        <MarkerBar />
-        <h2>From a Trino fork to a Rust engine</h2>
-        <p>
-          The audit question — “who read the customer table last Tuesday?” — was unanswerable when
-          every query ran under the same service account. So we forked Trino to pass the user’s
-          identity all the way through to the catalog and storage. That single constraint reshaped
-          everything, and SQE grew into a purpose-built engine in <strong>Rust</strong>, on
-          <strong>DataFusion</strong> and <strong>Apache Iceberg</strong> — one binary that runs
-          embedded on a laptop or distributed across a cluster, with per-query OIDC pass-through and
-          policy enforced at the plan layer.
-        </p>
-      </div>
-
-      <div class="about-block">
-        <MonoEyebrow text="Where it’s going" />
-        <MarkerBar yellow />
-        <h2>A sovereign data platform</h2>
-        <p>
-          SQE is the <strong>open-source</strong> query engine (Apache-2.0, on
-          <a href={GITHUB} rel="noopener">GitHub</a>) at the heart of a larger
-          <strong>sovereign data platform</strong> we’re building — data infrastructure you
-          actually own, with no shared root and no vendor lock-in. The wider platform isn’t open
-          source <em>yet</em>.
-        </p>
-      </div>
-
-      <div class="about-credit">
-        <p class="about-credit__line">Built at <strong>Schuberg Philis</strong></p>
-        <p class="about-credit__by">by Jacob Verhoeks &amp; Rafael Herrero</p>
-      </div>
+      <article class="prose"><Content /></article>
     </div>
   </section>
 </BaseLayout>
 
 <style>
-  .about-hero {
-    background: var(--space-gray);
-    color: #fff;
-    padding-block: clamp(56px, 8vw, 104px);
-    background-image: radial-gradient(800px 360px at 80% -10%, rgba(30, 232, 237, 0.1), transparent 60%);
-  }
-  .about-eyebrow {
-    font-family: var(--font-mono); color: var(--turquoise);
-    font-size: 0.82rem; letter-spacing: 0.1em; font-weight: 600;
-  }
-  .about-hero h1 { color: #fff; margin: 14px 0 18px; max-width: 16ch; }
-  .about-lede { font-size: 1.15rem; color: rgba(255, 255, 255, 0.82); max-width: 58ch; }
-  .about-lede code { font-family: var(--font-mono); background: rgba(255,255,255,0.08); color: var(--turquoise); padding: 0.1em 0.4em; border-radius: 4px; font-size: 0.9em; }
-
   .about-body { max-width: 760px; }
-  .about-block { margin-bottom: 48px; }
-  .about-block h2 { font-size: 1.6rem; margin: 8px 0 14px; }
-  .about-block p { font-size: 1.08rem; color: var(--text); }
-
-  .about-credit {
-    border-top: 1px solid var(--border);
-    padding-top: 28px;
-    margin-top: 8px;
-  }
-  .about-credit__line { font-size: 1.25rem; font-weight: 800; margin: 0; }
-  .about-credit__by { font-family: var(--font-mono); color: var(--text-muted); margin: 4px 0 0; }
 </style>
