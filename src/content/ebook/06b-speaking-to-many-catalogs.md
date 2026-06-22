@@ -231,7 +231,7 @@ From the user's side, nothing changed. The TOML has the same shape.
 ```toml
 [catalog.backend]
 type = "s3tables"
-table_bucket_arn = "arn:aws:s3tables:eu-example-1:ACCOUNT_ID:bucket/my-bucket"
+table_bucket_arn = "arn:aws:s3tables:eu-example-1:123456789012:bucket/my-bucket"
 ```
 
 The username and password flow at the SQE Flight SQL endpoint stays
