@@ -50,9 +50,12 @@ cp "$SQE_DIR/docs/site/blog/images/"* "$HERE/src/content/blog/images/" 2>/dev/nu
 # first H2) as the page's "Goals", and copy OUTPUT.md as the "Result". Both are
 # sanitized + gated below alongside the other synced content.
 echo "→ syncing quickstart goals + output"
-QS_NAMES=(polaris-keycloak-client-id polaris-keycloak-user-token nessie unity-oss \
-  aws-s3-tables aws-glue glue-lake-formation embedded-files embedded-sqlite-catalog \
-  attach-catalogs quack observability benchmark)
+# The quickstart set is owned by the SQE repo: docs/site/web/quickstarts.json
+# lists every published quickstart (same file drives the /quickstart cards).
+QS_NAMES=()
+while IFS= read -r n; do QS_NAMES+=("$n"); done < <(
+  node -e "const q=require('$SQE_DIR/docs/site/web/quickstarts.json'); console.log(q.groups.flatMap(g=>g.items.map(i=>i.name)).join('\n'))"
+)
 mkdir -p "$HERE/src/content/quickstart-goals" "$HERE/src/content/quickstart-output"
 rm -f "$HERE/src/content/quickstart-goals"/*.md "$HERE/src/content/quickstart-output"/*.md
 for n in "${QS_NAMES[@]}"; do
