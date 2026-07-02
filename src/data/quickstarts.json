@@ -23,16 +23,6 @@
           "name": "unity-oss",
           "title": "Unity Catalog OSS",
           "blurb": "Unity Catalog OSS over Iceberg REST (read-only; catalog-browse demo)."
-        },
-        {
-          "name": "polaris-ranger-keycloak",
-          "title": "Polaris + Apache Ranger + Keycloak",
-          "blurb": "GRANT/REVOKE become Ranger policies enforced by Polaris; column masks match Apache Spark byte-for-byte."
-        },
-        {
-          "name": "polaris-ranger-service-principal",
-          "title": "Service principals (client credentials)",
-          "blurb": "Clients bring their own OAuth2 client_id/secret; SQE runs the client_credentials grant per connection; Ranger authorizes at the Polaris boundary."
         }
       ]
     },
@@ -92,11 +82,6 @@
           "name": "observability",
           "title": "Observability: metrics + Grafana",
           "blurb": "Scrape SQE's Prometheus metrics with VictoriaMetrics and visualise them in Grafana."
-        },
-        {
-          "name": "distributed",
-          "title": "Distributed: coordinator + workers",
-          "blurb": "One coordinator and two stateless DataFusion workers over Arrow Flight; the coordinator plans, workers execute plan fragments."
         }
       ]
     },
