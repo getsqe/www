@@ -13,6 +13,14 @@ const GITHUB = 'https://github.com/schubergphilis/sqe';
 
 // Authored copy synced from docs/site/web/landing.json (single content home).
 const { features, compareHead, compareRows, bench } = landing;
+
+// Quickstart teaser cards: names picked in landing.json, metadata from quickstarts.json.
+import { groups as qsGroups, allQuickstarts } from '../data/quickstarts';
+const embeddedNames = new Set(qsGroups.find((g) => g.key === 'Embedded')?.items.map((i) => i.name) ?? []);
+const teaser = (landing.quickstartTeaser ?? [])
+  .map((name) => allQuickstarts.find((q) => q.name === name))
+  .filter((q) => !!q)
+  .map((q) => ({ ...q, mode: embeddedNames.has(q.name) ? 'embedded' : 'server' }));
 ---
 
 <BaseLayout
@@ -76,7 +84,27 @@ const { features, compareHead, compareRows, bench } = landing;
   <section class="section section--tight what" id="what">
     <div class="container">
       <SectionHeading eyebrow="What it is" title="Everything in one engine." />
-      <FeatureGrid items={features} columns={4} />
+      {features.some((f) => f.pillar) ? (
+        <div class="pillars">
+          {[
+            { key: 'iceberg', head: 'Iceberg-native read + write' },
+            { key: 'identity', head: 'Per-query identity' },
+            { key: 'open', head: 'Open + everywhere' },
+          ].map((p) => (
+            <div class="pillar">
+              <h3 class="pillar__head section-marker">{p.head}</h3>
+              {features.filter((f) => f.pillar === p.key).map((f) => (
+                <div class="pillar__item">
+                  <h4>{f.title}</h4>
+                  <p set:html={f.body} />
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+      ) : (
+        <FeatureGrid items={features} columns={4} />
+      )}
     </div>
   </section>
 
@@ -117,7 +145,7 @@ sqe> SELECT * FROM test_warehouse.default.my_table LIMIT 10;`}</code></pre>
   <!-- PROOF -->
   <section class="section proof" id="proof">
     <div class="container">
-      <SectionHeading eyebrow="Receipts" title="How SQE differs." />
+      <SectionHeading eyebrow="SQE vs Trino vs DuckDB" title="One engine instead of two." />
       <CompareTable head={compareHead} rows={compareRows} />
 
       <h3 class="proof-sub section-marker">Performance — SF1, vs Trino 465</h3>
@@ -173,6 +201,28 @@ sqe> SELECT * FROM test_warehouse.default.my_table LIMIT 10;`}</code></pre>
     .pf-teaser__cta { text-align:center; font-weight:700; }
   </style>
 
+  <!-- QUICKSTARTS TEASER -->
+  {teaser.length > 0 && (
+    <section class="section qs-teaser-sec">
+      <div class="container">
+        <SectionHeading eyebrow="Quickstarts" title="Running in minutes." center />
+        <div class="qs-teaser">
+          {teaser.map((q) => (
+            <a class="card qs-tease" href={`/quickstart/${q.name}`}>
+              <span class:list={['badge-mode', 'badge-mode--onlight', `badge-mode--${q.mode}`]}>{q.mode === 'embedded' ? 'Embedded' : 'Server'}</span>
+              <h3>{q.title}</h3>
+              <p>{q.blurb}</p>
+            </a>
+          ))}
+          <a class="card qs-tease qs-tease--all" href="/quickstart">
+            <h3>All quickstarts →</h3>
+            <p>Every catalog backend, both modes, each one runnable end to end.</p>
+          </a>
+        </div>
+      </div>
+    </section>
+  )}
+
   <!-- RECENTLY SHIPPED -->
   <section class="shipped">
     <div class="container shipped__inner">
@@ -208,6 +258,23 @@ sqe> SELECT * FROM test_warehouse.default.my_table LIMIT 10;`}</code></pre>
   .why-link { font-weight: 700; font-size: 0.9rem; margin-top: 10px; }
 
   .what { background: #fff; border-block: 1px solid var(--border); }
+  .pillars { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; }
+  .pillar__head { font-size: 1.08rem; margin-bottom: 16px; }
+  .pillar__item { margin-bottom: 16px; }
+  .pillar__item h4 { font-size: 0.95rem; margin: 0 0 4px; }
+  .pillar__item p { font-size: 0.88rem; color: var(--text-muted); margin: 0; }
+  @media (max-width: 880px) { .pillars { grid-template-columns: 1fr; gap: 20px; } }
+
+  .qs-teaser-sec { background: #fff; border-top: 1px solid var(--border); }
+  .qs-teaser { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  .qs-tease { display: flex; flex-direction: column; gap: 8px; }
+  .qs-tease:hover { text-decoration: none; }
+  .qs-tease h3 { font-size: 1rem; margin: 0; }
+  .qs-tease p { font-size: 0.88rem; color: var(--text-muted); margin: 0; flex: 1; }
+  .qs-tease--all { background: var(--soft-blue); justify-content: center; }
+  .qs-tease--all h3 { color: var(--sqe-blue); }
+  @media (max-width: 880px) { .qs-teaser { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 560px) { .qs-teaser { grid-template-columns: 1fr; } }
 
   .how-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
   .how-grid h3 { font-size: 1.1rem; margin-bottom: 14px; }
