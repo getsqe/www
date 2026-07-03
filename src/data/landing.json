@@ -273,7 +273,7 @@
       "key": "embedded",
       "name": "Embedded",
       "tagline": "DuckDB-shaped local SQL. One binary, no server, no JVM.",
-      "termTitle": "laptop — sqe-cli --embedded",
+      "termTitle": "laptop — embedded",
       "lines": [
         {
           "t": "cmd",
@@ -281,15 +281,19 @@
         },
         {
           "t": "out",
-          "s": "SQE 0.15.0 · ~/.sqe/warehouse/"
+          "s": "SQE 0.15.0 · local warehouse"
         },
         {
           "t": "sql",
-          "s": "sqe> SELECT kind, count(*) FROM sales.orders GROUP BY kind;"
+          "s": "sqe> SELECT kind, count(*)"
+        },
+        {
+          "t": "sql",
+          "s": "  ...> FROM orders GROUP BY 1;"
         },
         {
           "t": "out",
-          "s": "| purchase | 128 |  · 47ms"
+          "s": "| purchase | 128 | · 47ms"
         }
       ]
     },
@@ -297,23 +301,27 @@
       "key": "server",
       "name": "Server",
       "tagline": "Coordinator + stateless workers. Flight SQL and Trino HTTP.",
-      "termTitle": "cluster — trino client → sqe-coordinator",
+      "termTitle": "cluster — trino client",
       "lines": [
         {
           "t": "cmd",
-          "s": "trino --server sqe.example.com:8080 --user maria"
+          "s": "trino --server sqe:8080"
         },
         {
           "t": "out",
-          "s": "connected · authenticated as maria (OIDC)"
+          "s": "authenticated as maria (OIDC)"
         },
         {
           "t": "sql",
-          "s": "trino> SELECT kind, count(*) FROM sales.orders GROUP BY kind;"
+          "s": "trino> SELECT kind, count(*)"
+        },
+        {
+          "t": "sql",
+          "s": "   ...> FROM orders GROUP BY 1;"
         },
         {
           "t": "out",
-          "s": "| purchase | 128 |  · same result, same SQL"
+          "s": "| purchase | 128 | · same result"
         }
       ]
     }
