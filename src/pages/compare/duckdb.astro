@@ -1,6 +1,6 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import SectionHeading from '../../components/SectionHeading.astro';
+import PageHero from '../../components/PageHero.astro';
 import CompareTable from '../../components/CompareTable.astro';
 import FeatureGrid from '../../components/FeatureGrid.astro';
 import AsOf from '../../components/AsOf.astro';
@@ -15,17 +15,16 @@ const { aheadHead, aheadRows, inspired, gaps } = compare;
 <BaseLayout
   title="SQE vs DuckDB — embedded engine comparison | getsqe.com"
   description="SQE matches DuckDB on the embedded side — file-format TVFs, hf:// URLs, a Delta reader, httpfs-equivalent access — then scales the same binary to a multi-tenant, policy-enforced cluster."
+  darkHeader
 >
+  <PageHero
+    eyebrow="Comparison"
+    title="SQE vs DuckDB"
+    lede="The goal isn’t to <em>be</em> DuckDB. SQE is the Iceberg-first analytical engine that runs both as an embedded single binary <strong>and</strong> as a distributed cluster with OIDC pass-through and policy enforcement. Where SQE matches DuckDB on the embedded side, the same binary scales to a multi-tenant cluster."
+  />
   <section class="section">
     <div class="container doc">
-      <SectionHeading eyebrow="Comparison" title="SQE vs DuckDB" />
       <AsOf />
-      <p class="lead">
-        The goal isn’t to <em>be</em> DuckDB. SQE is the Iceberg-first analytical engine that runs
-        both as an embedded single binary <strong>and</strong> as a distributed cluster with OIDC
-        pass-through and policy enforcement. Where SQE matches DuckDB on the embedded side, the
-        same binary scales to a multi-tenant cluster.
-      </p>
       <p class="crumb"><a href="/compare/iceberg">Iceberg matrix</a> · <a href="/compare/trino">vs Trino</a> · <a href="/compare/features">SQL features</a></p>
     </div>
 
@@ -103,7 +102,6 @@ const { aheadHead, aheadRows, inspired, gaps } = compare;
 
 <style>
   .doc { max-width: 900px; }
-  .lead { font-size: 1.12rem; color: var(--text); max-width: 70ch; }
   .crumb { font-size: 0.9rem; color: var(--text-muted); margin-top: 10px; }
   .block { max-width: 1000px; margin-top: 52px; }
   .block__h { font-size: 1.45rem; margin-bottom: 18px; }
