@@ -223,3 +223,10 @@ table.tbl td.num, table.tbl th.num {
   html { scroll-behavior: auto; }
   .btn { transition: none; }
 }
+
+/* Mode badges — the sitewide Embedded/Server vocabulary. */
+.badge-mode { display:inline-flex; align-items:center; gap:6px; font-family:var(--font-mono); font-size:0.72rem; font-weight:700; letter-spacing:0.06em; padding:3px 10px; border-radius:999px; width:fit-content; }
+.badge-mode--embedded { background:rgba(30,232,237,0.14); color:var(--turquoise); }
+.badge-mode--server { background:rgba(30,128,237,0.22); color:#7db8f7; }
+.badge-mode--onlight.badge-mode--embedded { background:rgba(14,159,110,0.1); color:#0d7f83; }
+.badge-mode--onlight.badge-mode--server { background:rgba(30,128,237,0.1); color:var(--sqe-blue); }

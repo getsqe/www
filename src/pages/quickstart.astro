@@ -35,7 +35,7 @@ const REPO_QS = 'https://github.com/schubergphilis/sqe/tree/main/quickstart';
   <section class="section">
     <div class="container">
       {groups.map((g) => (
-        <div class="qs-group">
+        <div class="qs-group" id={g.key.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}>
           <div class="qs-group__head">
             <h2 class="qs-group__title">{g.key}</h2>
             <p class="qs-group__blurb">{g.blurb}</p>

@@ -16,10 +16,25 @@ const { features, compareHead, compareRows, bench } = landing;
 ---
 
 <BaseLayout
-  title="SQE — Sovereign Query Engine | Iceberg-first SQL that scales"
+  title="SQE — The query engine for the Iceberg lakehouse"
   darkHeader
 >
   <Hero />
+
+  <!-- MODE STRIP -->
+  {landing.heroModes && (
+    <section class="mode-strip">
+      <div class="container mode-strip__grid">
+        {landing.heroModes.map((m) => (
+          <a class="card mode-card" href={m.key === 'embedded' ? '/quickstart#embedded' : '/quickstart#catalog-authentication'}>
+            <span class:list={['badge-mode', 'badge-mode--onlight', `badge-mode--${m.key}`]}>{m.name}</span>
+            <p class="mode-card__tag">{m.tagline}</p>
+            <span class="mode-card__go">Quickstarts →</span>
+          </a>
+        ))}
+      </div>
+    </section>
+  )}
 
   <!-- WHY -->
   <section class="section" id="why">
@@ -82,7 +97,7 @@ sqe> ATTACH 'http://catalog.example.com/api/catalog' AS partner_cat
 sqe> SELECT * FROM partner_cat.sales.orders LIMIT 10;`}</code></pre>
         </div>
         <div>
-          <h3 class="section-marker">Cluster — Polaris + S3 + SQE locally</h3>
+          <h3 class="section-marker">Server — Polaris + S3 + SQE locally</h3>
           <pre class="code"><code>{`docker compose -f docker-compose.test.yml up -d
 ./scripts/bootstrap-test.sh
 cargo run --release --bin sqe-coordinator -- tests/sqe-test.toml
@@ -176,6 +191,14 @@ sqe> SELECT * FROM test_warehouse.default.my_table LIMIT 10;`}</code></pre>
 </BaseLayout>
 
 <style>
+  .mode-strip { padding-block: 26px 0; }
+  .mode-strip__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .mode-card { display: flex; flex-direction: column; gap: 8px; }
+  .mode-card:hover { text-decoration: none; }
+  .mode-card__tag { margin: 0; color: var(--text); font-weight: 600; font-size: 1rem; }
+  .mode-card__go { font-weight: 700; font-size: 0.88rem; color: var(--sqe-blue); }
+  @media (max-width: 720px) { .mode-strip__grid { grid-template-columns: 1fr; } }
+
   .why-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
   .why-card { display: flex; flex-direction: column; }
   .why-stat { margin-bottom: 8px; }
