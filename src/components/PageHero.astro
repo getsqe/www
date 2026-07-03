@@ -1,0 +1,53 @@
+---
+// Shared dark hero band for all non-landing pages: eyebrow / title / lede,
+// with a slot for page-specific extras (AsOf stamp, stat rows, CTAs).
+interface Props { eyebrow: string; title: string; lede?: string; }
+const { eyebrow, title, lede } = Astro.props;
+---
+<section class="page-hero">
+  <div class="container">
+    <span class="page-hero__eyebrow">{eyebrow}</span>
+    <h1 class="page-hero__title" set:html={title} />
+    {lede && <p class="page-hero__lede" set:html={lede} />}
+    <slot />
+  </div>
+</section>
+
+<style>
+  .page-hero {
+    background: var(--space-gray);
+    color: #fff;
+    padding-block: clamp(36px, 5vw, 64px);
+    background-image: radial-gradient(700px 320px at 82% -20%, rgba(30, 232, 237, 0.09), transparent 60%);
+  }
+  .page-hero__eyebrow {
+    font-family: var(--font-mono);
+    color: var(--turquoise);
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+    font-weight: 600;
+  }
+  .page-hero__title {
+    color: #fff;
+    font-size: clamp(1.9rem, 3.6vw, 2.7rem);
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    margin: 10px 0 12px;
+    text-wrap: balance;
+  }
+  .page-hero__lede {
+    color: rgba(255, 255, 255, 0.78);
+    font-size: 1.05rem;
+    max-width: 70ch;
+    margin: 0;
+  }
+  .page-hero__lede :global(strong) { color: #fff; }
+  .page-hero__lede :global(code) {
+    font-family: var(--font-mono);
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--turquoise);
+    padding: 0.1em 0.4em;
+    border-radius: 4px;
+    font-size: 0.9em;
+  }
+</style>

@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHero from '../components/PageHero.astro';
 import SectionHeading from '../components/SectionHeading.astro';
 import matrix from '../data/iceberg-matrix.json';
 import roadmapData from '../data/roadmap.json';
@@ -34,25 +35,20 @@ const roadmapGroups = [
   description="Where SQE is and where it’s going: 88.4% on the Iceberg matrix, 6/7 benchmark suites won, a read-only ops web UI — plus the verified open roadmap of what’s in progress, planned, and blocked upstream."
   darkHeader
 >
-  <section class="log-hero">
-    <div class="container">
-      <span class="log-eyebrow">Roadmap</span>
-      <h1>Where SQE is, and what’s next.</h1>
-      <p class="log-lede">
-        SQE is in active development. This is the current state, the milestones that got it here,
-        and the verified open roadmap — the full commit history lives on
-        <a href={GITHUB} rel="noopener">GitHub</a>.
-      </p>
-      <div class="log-state">
-        {state.map((s) => (
-          <div class="log-state__card">
-            <span class="stat-num">{s.num}</span>
-            <span class="log-state__label">{s.label}</span>
-          </div>
-        ))}
-      </div>
+  <PageHero
+    eyebrow="Roadmap"
+    title="Where SQE is, and what’s next."
+    lede={`SQE is in active development. This is the current state, the milestones that got it here, and the verified open roadmap — the full commit history lives on <a href="${GITHUB}" rel="noopener">GitHub</a>.`}
+  >
+    <div class="log-state">
+      {state.map((s) => (
+        <div class="log-state__card">
+          <span class="stat-num">{s.num}</span>
+          <span class="log-state__label">{s.label}</span>
+        </div>
+      ))}
     </div>
-  </section>
+  </PageHero>
 
   <section class="section">
     <div class="container log-body">
@@ -104,14 +100,6 @@ const roadmapGroups = [
 </BaseLayout>
 
 <style>
-  .log-hero {
-    background: var(--space-gray); color: #fff;
-    padding-block: clamp(48px, 7vw, 88px);
-    background-image: radial-gradient(800px 360px at 82% -10%, rgba(30, 232, 237, 0.1), transparent 60%);
-  }
-  .log-eyebrow { font-family: var(--font-mono); color: var(--turquoise); font-size: 0.82rem; letter-spacing: 0.1em; font-weight: 600; }
-  .log-hero h1 { color: #fff; margin: 12px 0 16px; }
-  .log-lede { color: rgba(255,255,255,0.82); max-width: 56ch; font-size: 1.1rem; }
   .log-state { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 34px; }
   .log-state__card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 18px; display: flex; flex-direction: column; gap: 6px; }
   .log-state__card .stat-num { color: var(--turquoise); font-size: 1.9rem; }

@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHero from '../components/PageHero.astro';
 import SectionHeading from '../components/SectionHeading.astro';
 import AsOf from '../components/AsOf.astro';
 import perf from '../data/performance.json';
@@ -13,18 +14,13 @@ const fmtDate = (iso: string) =>
   description="SQE wins six of seven benchmark suites against Trino 465 at SF1, with 222/222 queries differentially validated. Decisive on smaller scales, closing fast at SF10+."
   darkHeader
 >
-  <section class="pf-hero">
-    <div class="container">
-      <span class="pf-eyebrow">Performance</span>
-      <h1>Six of seven suites. Faster than Trino.</h1>
-      <p class="pf-lede">{perf.headline.validated}</p>
-      <div class="pf-stats">
-        <div class="pf-stat"><span class="pf-num">{perf.headline.suitesWon}</span><span class="pf-lbl">suites won vs {perf.headline.vsTrino}</span></div>
-        <div class="pf-stat"><span class="pf-num">{perf.headline.queriesPass}</span><span class="pf-lbl">queries pass, differentially validated</span></div>
-        <div class="pf-stat"><span class="pf-num">18.5×</span><span class="pf-lbl">top suite speedup (TPC-E)</span></div>
-      </div>
+  <PageHero eyebrow="Performance" title="Six of seven suites. Faster than Trino." lede={perf.headline.validated}>
+    <div class="pf-stats">
+      <div class="pf-stat"><span class="pf-num">{perf.headline.suitesWon}</span><span class="pf-lbl">suites won vs {perf.headline.vsTrino}</span></div>
+      <div class="pf-stat"><span class="pf-num">{perf.headline.queriesPass}</span><span class="pf-lbl">queries pass, differentially validated</span></div>
+      <div class="pf-stat"><span class="pf-num">18.5×</span><span class="pf-lbl">top suite speedup (TPC-E)</span></div>
     </div>
-  </section>
+  </PageHero>
 
   <section class="section">
     <div class="container pf-body">
@@ -81,11 +77,6 @@ const fmtDate = (iso: string) =>
 </BaseLayout>
 
 <style>
-  .pf-hero { background: var(--space-gray); color:#fff; padding-block: clamp(48px,7vw,92px);
-    background-image: radial-gradient(820px 380px at 84% -10%, rgba(30,232,237,0.12), transparent 60%); }
-  .pf-eyebrow { font-family: var(--font-mono); color: var(--turquoise); font-size:0.82rem; letter-spacing:0.1em; font-weight:600; }
-  .pf-hero h1 { color:#fff; margin:12px 0 14px; font-size: clamp(2rem,4.5vw,3rem); }
-  .pf-lede { color: rgba(255,255,255,0.82); max-width:62ch; font-size:1.05rem; }
   .pf-stats { display:grid; grid-template-columns: repeat(3,1fr); gap:16px; margin-top:30px; }
   .pf-stat { background: rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.12); border-radius:12px; padding:18px; }
   .pf-num { display:block; color: var(--turquoise); font-size:2.1rem; font-weight:800; letter-spacing:-0.02em; }

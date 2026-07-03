@@ -1,6 +1,6 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import SectionHeading from '../../components/SectionHeading.astro';
+import PageHero from '../../components/PageHero.astro';
 import AsOf from '../../components/AsOf.astro';
 import { getEntry, render } from 'astro:content';
 
@@ -11,18 +11,16 @@ const { Content } = await render(entry);
 <BaseLayout
   title="SQE vs Trino — SQL & feature compatibility | getsqe.com"
   description="SQE targets ~96% Trino SQL compatibility for Iceberg-only workloads, speaks the Trino HTTP wire protocol, and runs as the authenticated user instead of a service account."
+  darkHeader
 >
+  <PageHero
+    eyebrow="Comparison"
+    title="SQE vs Trino"
+    lede="SQE is a drop-in replacement for Trino in <strong>Iceberg-only</strong> environments — roughly <strong>96% SQL compatibility</strong>, the <strong>Trino HTTP</strong> wire protocol so existing clients and dbt models connect unchanged, and per-query identity instead of a shared service account. The matrix below maps every Trino function and feature to its SQE equivalent."
+  />
   <section class="section">
     <div class="container doc">
-      <SectionHeading eyebrow="Comparison" title="SQE vs Trino" />
       <AsOf />
-      <p class="lead">
-        SQE is a drop-in replacement for Trino in <strong>Iceberg-only</strong> environments —
-        roughly <strong>96% SQL compatibility</strong>, the <strong>Trino HTTP</strong> wire
-        protocol so existing clients and dbt models connect unchanged, and per-query identity
-        instead of a shared service account. The matrix below maps every Trino function and
-        feature to its SQE equivalent.
-      </p>
       <p class="legend">
         <span class="legend__k"><b class="ok">✅</b> equivalent</span>
         <span class="legend__k"><b class="warn">⚠️</b> partial / different</span>
@@ -37,7 +35,6 @@ const { Content } = await render(entry);
 
 <style>
   .doc { max-width: 900px; }
-  .lead { font-size: 1.1rem; color: var(--text); max-width: 72ch; }
   .legend { display: flex; gap: 18px; flex-wrap: wrap; font-size: 0.86rem; color: var(--text-muted); margin: 6px 0 6px; }
   .legend b { font-style: normal; }
   .crumb { font-size: 0.9rem; color: var(--text-muted); margin: 8px 0 6px; }

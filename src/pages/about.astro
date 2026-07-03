@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHero from '../components/PageHero.astro';
 import { getEntry, render } from 'astro:content';
 
 // Authored copy is synced from docs/site/web/about.md (single content home in
@@ -26,13 +27,7 @@ const heroLede = data.heroLede;
   description={data.description ?? "SQE started as a fork of Trino with end-to-end authentication instead of service accounts. Built at Schuberg Philis by Jacob Verhoeks & Rafael Herrero, it's the open-source engine at the heart of a sovereign data platform."}
   darkHeader
 >
-  <section class="about-hero">
-    <div class="container">
-      <span class="about-eyebrow">{eyebrow}</span>
-      <h1>{heroTitle}</h1>
-      {heroLede && <p class="about-lede">{heroLede}</p>}
-    </div>
-  </section>
+  <PageHero eyebrow={eyebrow} title={heroTitle} lede={heroLede} />
 
   <section class="section">
     <div class="container about-body">
@@ -42,19 +37,6 @@ const heroLede = data.heroLede;
 </BaseLayout>
 
 <style>
-  .about-hero {
-    background: var(--space-gray);
-    color: #fff;
-    padding-block: clamp(56px, 8vw, 104px);
-    background-image: radial-gradient(800px 360px at 80% -10%, rgba(30, 232, 237, 0.1), transparent 60%);
-  }
-  .about-eyebrow {
-    font-family: var(--font-mono); color: var(--turquoise);
-    font-size: 0.82rem; letter-spacing: 0.1em; font-weight: 600;
-  }
-  .about-hero h1 { color: #fff; margin: 14px 0 18px; max-width: 18ch; }
-  .about-lede { font-size: 1.15rem; color: rgba(255, 255, 255, 0.82); max-width: 58ch; }
-
   .about-body { max-width: 760px; }
   .about-body .prose h2 { font-size: 1.6rem; margin: 36px 0 14px; }
   .about-body .prose p { font-size: 1.08rem; color: var(--text); }
