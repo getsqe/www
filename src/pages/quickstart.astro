@@ -33,7 +33,12 @@ const REPO_QS = 'https://github.com/schubergphilis/sqe/tree/main/quickstart';
       {groups.map((g) => (
         <div class="qs-group" id={g.key.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}>
           <div class="qs-group__head">
-            <h2 class="qs-group__title">{g.key}</h2>
+            <div class="qs-group__row">
+              <h2 class="qs-group__title">{g.key}</h2>
+              <span class:list={['badge-mode', 'badge-mode--onlight', g.key === 'Embedded' ? 'badge-mode--embedded' : 'badge-mode--server']}>
+                {g.key === 'Embedded' ? 'Embedded' : 'Server'}
+              </span>
+            </div>
             <p class="qs-group__blurb">{g.blurb}</p>
           </div>
           <div class="qs-grid">
@@ -69,7 +74,8 @@ const REPO_QS = 'https://github.com/schubergphilis/sqe/tree/main/quickstart';
 
   .qs-group { margin-bottom: 44px; }
   .qs-group__head { margin-bottom: 18px; }
-  .qs-group__title { font-size: 1.35rem; margin: 0 0 4px; }
+  .qs-group__row { display: flex; align-items: center; gap: 12px; margin-bottom: 4px; }
+  .qs-group__title { font-size: 1.35rem; margin: 0; }
   .qs-group__blurb { color: var(--text-muted); margin: 0; font-size: 0.95rem; }
 
   .qs-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
