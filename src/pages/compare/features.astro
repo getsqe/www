@@ -16,7 +16,7 @@ const { Content } = await render(entry);
   <PageHero
     eyebrow="Comparison"
     title="SQL feature comparison"
-    lede="SQE runs on <strong>Apache DataFusion 53.1</strong>, so the standard SQL surface — windows, aggregates, joins, CTEs, set operations — comes for free. SQE adds multi-catalog integration, pluggable auth, distributed execution, Iceberg DML, and a single-binary embedded mode. Here it is side by side with Trino, Spark SQL, and DuckDB."
+    lede="SQE runs on <strong>Apache DataFusion</strong>, so the standard SQL surface — windows, aggregates, joins, CTEs, set operations — comes for free. SQE adds multi-catalog integration, pluggable auth, distributed execution, Iceberg DML, and a single-binary embedded mode. Here it is side by side with Trino, Spark SQL, and DuckDB."
   />
   <section class="section">
     <div class="container doc">
@@ -29,5 +29,8 @@ const { Content } = await render(entry);
 
 <style>
   .doc { max-width: 900px; }
+  /* PageHero already renders the page title; the synced markdown leads with
+     its own H1 — hide it so exactly one heading is exposed. */
+  .doc .prose :global(h1) { display: none; }
   .crumb { font-size: 0.9rem; color: var(--text-muted); margin: 8px 0 6px; }
 </style>

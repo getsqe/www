@@ -6,6 +6,8 @@ import AsOf from '../components/AsOf.astro';
 import perf from '../data/performance.json';
 
 const DOCS = 'https://docs.getsqe.com';
+// Guard: keep the page rendering if a future sync drops the headline block.
+const headline = perf.headline ?? { suitesWon: '6/7', vsTrino: 'Trino 465', queriesPass: '222/222', validated: '' };
 const fmtDate = (iso: string) =>
   new Date(iso + 'T00:00:00Z').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 ---
@@ -14,10 +16,10 @@ const fmtDate = (iso: string) =>
   description="SQE wins six of seven benchmark suites against Trino 465 at SF1, with 222/222 queries differentially validated. Decisive on smaller scales, closing fast at SF10+."
   darkHeader
 >
-  <PageHero eyebrow="Performance" title="Six of seven suites. Faster than Trino." lede={perf.headline.validated}>
+  <PageHero eyebrow="Performance" title="Six of seven suites. Faster than Trino." lede={headline.validated}>
     <div class="pf-stats">
-      <div class="pf-stat"><span class="pf-num">{perf.headline.suitesWon}</span><span class="pf-lbl">suites won vs {perf.headline.vsTrino}</span></div>
-      <div class="pf-stat"><span class="pf-num">{perf.headline.queriesPass}</span><span class="pf-lbl">queries pass, differentially validated</span></div>
+      <div class="pf-stat"><span class="pf-num">{headline.suitesWon}</span><span class="pf-lbl">suites won vs {headline.vsTrino}</span></div>
+      <div class="pf-stat"><span class="pf-num">{headline.queriesPass}</span><span class="pf-lbl">queries pass, differentially validated</span></div>
       <div class="pf-stat"><span class="pf-num">18.5×</span><span class="pf-lbl">top suite speedup (TPC-E)</span></div>
     </div>
   </PageHero>

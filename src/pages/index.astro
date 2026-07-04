@@ -14,6 +14,9 @@ const GITHUB = 'https://github.com/schubergphilis/sqe';
 // Authored copy synced from docs/site/web/landing.json (single content home).
 const { features, compareHead, compareRows, bench } = landing;
 
+// Performance teaser stats; keep the section rendering if a future sync drops the field.
+const perfHeadline = perf.headline ?? { suitesWon: '6/7', vsTrino: 'Trino', queriesPass: '222/222' };
+
 // Quickstart teaser cards: names picked in landing.json, metadata from quickstarts.json.
 import { groups as qsGroups, allQuickstarts } from '../data/quickstarts';
 const embeddedNames = new Set(qsGroups.find((g) => g.key === 'Embedded')?.items.map((i) => i.name) ?? []);
@@ -186,8 +189,8 @@ sqe> SELECT * FROM test_warehouse.default.my_table LIMIT 10;`}</code></pre>
     <div class="container">
       <SectionHeading eyebrow="Performance" title="Six of seven suites, faster than Trino." center />
       <div class="pf-teaser">
-        <div class="pf-teaser__stat"><b>{perf.headline.suitesWon}</b><span>suites vs {perf.headline.vsTrino}</span></div>
-        <div class="pf-teaser__stat"><b>{perf.headline.queriesPass}</b><span>queries pass, validated</span></div>
+        <div class="pf-teaser__stat"><b>{perfHeadline.suitesWon}</b><span>suites vs {perfHeadline.vsTrino}</span></div>
+        <div class="pf-teaser__stat"><b>{perfHeadline.queriesPass}</b><span>queries pass, validated</span></div>
         <div class="pf-teaser__stat"><b>18.5×</b><span>top speedup</span></div>
       </div>
       <p class="pf-teaser__cta"><a href="/performance">See the performance leaps →</a></p>

@@ -35,6 +35,9 @@ const { Content } = await render(entry);
 
 <style>
   .doc { max-width: 900px; }
+  /* PageHero already renders the page title; the synced markdown leads with
+     its own H1 — hide it so exactly one heading is exposed. */
+  .doc .prose :global(h1) { display: none; }
   .legend { display: flex; gap: 18px; flex-wrap: wrap; font-size: 0.86rem; color: var(--text-muted); margin: 6px 0 6px; }
   .legend b { font-style: normal; }
   .crumb { font-size: 0.9rem; color: var(--text-muted); margin: 8px 0 6px; }
