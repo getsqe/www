@@ -14,6 +14,9 @@ const GITHUB = 'https://github.com/schubergphilis/sqe';
 // Authored copy synced from docs/site/web/landing.json (single content home).
 const { features, compareHead, compareRows, bench } = landing;
 
+// Performance teaser stats; keep the section rendering if a future sync drops the field.
+const perfHeadline = perf.headline ?? { suitesWon: '6/7', vsTrino: 'Trino', queriesPass: '222/222' };
+
 // Quickstart teaser cards: names picked in landing.json, metadata from quickstarts.json.
 import { groups as qsGroups, allQuickstarts } from '../data/quickstarts';
 const embeddedNames = new Set(qsGroups.find((g) => g.key === 'Embedded')?.items.map((i) => i.name) ?? []);
@@ -115,7 +118,8 @@ const teaser = (landing.quickstartTeaser ?? [])
       <div class="how-grid">
         <div>
           <h3 class="section-marker">Embedded — one binary, no cluster</h3>
-          <pre class="code"><code>{`cargo install --path crates/sqe-cli
+          <pre class="code"><code>{`git clone https://github.com/schubergphilis/sqe && cd sqe
+cargo install --path crates/sqe-cli
 sqe-cli --embedded          # persistent warehouse at ~/.sqe/warehouse/
 
 sqe> SELECT * FROM '/data/sales.parquet' LIMIT 5;
@@ -125,17 +129,15 @@ sqe> ATTACH 'http://catalog.example.com/api/catalog' AS partner_cat
 sqe> SELECT * FROM partner_cat.sales.orders LIMIT 10;`}</code></pre>
         </div>
         <div>
-          <h3 class="section-marker">Server — Polaris + S3 + SQE locally</h3>
-          <pre class="code"><code>{`docker compose -f docker-compose.test.yml up -d
-./scripts/bootstrap-test.sh
-cargo run --release --bin sqe-coordinator -- tests/sqe-test.toml
+          <h3 class="section-marker">Server — Polaris + Keycloak + SQE locally</h3>
+          <pre class="code"><code>{`git clone https://github.com/schubergphilis/sqe
+cd sqe/quickstart/polaris-keycloak-client-id
+docker compose up -d        # Polaris + Keycloak + MinIO + SQE
 
-# Connect with the CLI over Arrow Flight SQL
-cargo run --bin sqe-cli -- --host localhost --port 50051 \\
-  --username root --protocol flight
+# Connect over Arrow Flight SQL
+docker compose exec sqe sqe-cli --port 50051 --user adminuser
 
-sqe> SHOW CATALOGS;
-sqe> SELECT * FROM test_warehouse.default.my_table LIMIT 10;`}</code></pre>
+sqe> SHOW CATALOGS;`}</code></pre>
         </div>
       </div>
       <p class="how-foot">Full quickstart covering all seven catalog backends → <a href={DOCS}>docs.getsqe.com</a></p>
@@ -186,8 +188,8 @@ sqe> SELECT * FROM test_warehouse.default.my_table LIMIT 10;`}</code></pre>
     <div class="container">
       <SectionHeading eyebrow="Performance" title="Six of seven suites, faster than Trino." center />
       <div class="pf-teaser">
-        <div class="pf-teaser__stat"><b>{perf.headline.suitesWon}</b><span>suites vs {perf.headline.vsTrino}</span></div>
-        <div class="pf-teaser__stat"><b>{perf.headline.queriesPass}</b><span>queries pass, validated</span></div>
+        <div class="pf-teaser__stat"><b>{perfHeadline.suitesWon}</b><span>suites vs {perfHeadline.vsTrino}</span></div>
+        <div class="pf-teaser__stat"><b>{perfHeadline.queriesPass}</b><span>queries pass, validated</span></div>
         <div class="pf-teaser__stat"><b>18.5×</b><span>top speedup</span></div>
       </div>
       <p class="pf-teaser__cta"><a href="/performance">See the performance leaps →</a></p>
@@ -241,9 +243,11 @@ sqe> SELECT * FROM test_warehouse.default.my_table LIMIT 10;`}</code></pre>
 </BaseLayout>
 
 <style>
-  .mode-strip { padding-block: 26px 0; }
+  /* The strip's cards float over the hero's bottom edge, stitching the dark
+     claim to the light page. */
+  .mode-strip { margin-top: -28px; padding-block: 0; }
   .mode-strip__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
-  .mode-card { display: flex; flex-direction: column; gap: 8px; }
+  .mode-card { display: flex; flex-direction: column; gap: 8px; box-shadow: 0 18px 44px -26px rgba(2, 12, 23, 0.55); }
   .mode-card:hover { text-decoration: none; }
   .mode-card__tag { margin: 0; color: var(--text); font-weight: 600; font-size: 1rem; }
   .mode-card__go { font-weight: 700; font-size: 0.88rem; color: var(--sqe-blue); }
@@ -258,12 +262,16 @@ sqe> SELECT * FROM test_warehouse.default.my_table LIMIT 10;`}</code></pre>
   .why-link { font-weight: 700; font-size: 0.9rem; margin-top: 10px; }
 
   .what { background: #fff; border-block: 1px solid var(--border); }
-  .pillars { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; }
+  .pillars { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0 32px; }
+  .pillar + .pillar { border-left: 1px solid var(--border); padding-left: 32px; }
   .pillar__head { font-size: 1.08rem; margin-bottom: 16px; }
   .pillar__item { margin-bottom: 16px; }
   .pillar__item h4 { font-size: 0.95rem; margin: 0 0 4px; }
   .pillar__item p { font-size: 0.88rem; color: var(--text-muted); margin: 0; }
-  @media (max-width: 880px) { .pillars { grid-template-columns: 1fr; gap: 20px; } }
+  @media (max-width: 880px) {
+    .pillars { grid-template-columns: 1fr; gap: 20px; }
+    .pillar + .pillar { border-left: 0; padding-left: 0; border-top: 1px solid var(--border); padding-top: 20px; }
+  }
 
   .qs-teaser-sec { background: #fff; border-top: 1px solid var(--border); }
   .qs-teaser { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }

@@ -42,8 +42,9 @@ const ogImage = new URL('/og-image.svg', Astro.site ?? 'https://getsqe.com').hre
     <meta name="theme-color" content="#082646" />
   </head>
   <body class:list={[darkHeader && 'has-dark-header']}>
+    <a class="skip-link" href="#main">Skip to content</a>
     <Nav />
-    <main>
+    <main id="main">
       <slot />
     </main>
     <Footer />

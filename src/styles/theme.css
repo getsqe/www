@@ -35,6 +35,20 @@
 
 * { box-sizing: border-box; }
 
+/* ---- skip link (hidden until keyboard-focused) ---- */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 100;
+  background: var(--sqe-blue);
+  color: #fff;
+  font-weight: 700;
+  padding: 10px 16px;
+  border-radius: 0 0 8px 0;
+}
+.skip-link:focus { left: 0; }
+
 html {
   scroll-behavior: smooth;
   -webkit-text-size-adjust: 100%;
@@ -52,7 +66,16 @@ body {
 }
 
 a { color: var(--accent); text-decoration: none; }
-a:hover { text-decoration: underline; }
+a:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+::selection { background: var(--sqe-blue); color: #fff; }
+
+/* Keyboard focus: one visible ring everywhere; turquoise on the dark chrome. */
+:focus-visible { outline: 2px solid var(--sqe-blue); outline-offset: 3px; border-radius: 3px; }
+header :focus-visible, footer :focus-visible { outline-color: var(--turquoise); }
+
+/* Anchored sections land with breathing room. */
+[id] { scroll-margin-top: 24px; }
 
 h1, h2, h3, h4 {
   line-height: 1.12;
@@ -62,6 +85,7 @@ h1, h2, h3, h4 {
 h1 { font-weight: 900; font-size: clamp(2.4rem, 5vw, 3.6rem); }
 h2 { font-weight: 900; font-size: clamp(1.8rem, 3.4vw, 2.6rem); }
 h3 { font-weight: 800; font-size: 1.35rem; }
+h1, h2 { text-wrap: balance; }
 
 p { margin: 0 0 1rem; }
 
@@ -129,6 +153,15 @@ p { margin: 0 0 1rem; }
   border-radius: var(--radius);
   padding: 24px;
 }
+/* Cards that ARE links share one hover grammar: lift + blue edge + soft shadow. */
+a.card {
+  transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+}
+a.card:hover {
+  border-color: var(--sqe-blue);
+  transform: translateY(-2px);
+  box-shadow: 0 16px 36px -22px rgba(2, 12, 23, 0.4);
+}
 
 /* ---- buttons ---- */
 .btn {
@@ -144,7 +177,8 @@ p { margin: 0 0 1rem; }
   cursor: pointer;
 }
 .btn:hover { text-decoration: none; transform: translateY(-1px); }
-.btn--primary { background: var(--sqe-blue); color: #fff; }
+.btn:active { transform: translateY(0); }
+.btn--primary { background: var(--sqe-blue); color: #fff; box-shadow: 0 10px 24px -14px rgba(30, 128, 237, 0.7); }
 .btn--primary:hover { background: #1a6fce; }
 .btn--ghost {
   background: transparent;
@@ -177,6 +211,7 @@ table.tbl thead th {
   font-weight: 800;
   white-space: nowrap;
 }
+table.tbl tbody tr:nth-child(even) { background: rgba(232, 242, 253, 0.45); }
 table.tbl tbody tr:hover { background: var(--soft-blue); }
 table.tbl td.num, table.tbl th.num {
   font-family: var(--font-mono);
@@ -195,6 +230,7 @@ table.tbl td.num, table.tbl th.num {
 .prose table { width: 100%; border-collapse: collapse; margin: 1.2em 0; font-size: 0.92rem; }
 .prose th, .prose td { border: 1px solid var(--border); padding: 9px 12px; text-align: left; }
 .prose thead th { background: var(--soft-blue); font-weight: 800; }
+.prose tbody tr:nth-child(even) { background: rgba(232, 242, 253, 0.4); }
 .prose code {
   font-family: var(--font-mono);
   font-size: 0.86em;
@@ -218,10 +254,22 @@ table.tbl td.num, table.tbl th.num {
   padding: 0.2em 0 0.2em 18px;
   color: var(--text-muted);
 }
+/* Wide reference matrices (compare pages) scroll instead of overflowing the
+   viewport on small screens; desktop keeps the full-width table layout. */
+@media (max-width: 720px) {
+  .prose table { display: block; overflow-x: auto; }
+}
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-  .btn { transition: none; }
+  /* Blanket kill-switch: every animation/transition (incl. component-scoped
+     ones like the hero reveal) collapses to its end state, instantly. */
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0s !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 /* Mode badges — the sitewide Embedded/Server vocabulary. */

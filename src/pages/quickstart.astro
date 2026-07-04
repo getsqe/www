@@ -33,12 +33,17 @@ const REPO_QS = 'https://github.com/schubergphilis/sqe/tree/main/quickstart';
       {groups.map((g) => (
         <div class="qs-group" id={g.key.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}>
           <div class="qs-group__head">
-            <h2 class="qs-group__title">{g.key}</h2>
+            <div class="qs-group__row">
+              <h2 class="qs-group__title">{g.key}</h2>
+              <span class:list={['badge-mode', 'badge-mode--onlight', g.key === 'Embedded' ? 'badge-mode--embedded' : 'badge-mode--server']}>
+                {g.key === 'Embedded' ? 'Embedded' : 'Server'}
+              </span>
+            </div>
             <p class="qs-group__blurb">{g.blurb}</p>
           </div>
           <div class="qs-grid">
             {g.items.map((it) => (
-              <article class="qs-card">
+              <article class:list={['qs-card', g.key === 'Embedded' && 'qs-card--embedded']}>
                 <div class="qs-card__top">
                   <h3 class="qs-card__title">
                     <a class="qs-card__link" href={`/quickstart/${it.name}`}>{it.title}</a>
@@ -69,7 +74,8 @@ const REPO_QS = 'https://github.com/schubergphilis/sqe/tree/main/quickstart';
 
   .qs-group { margin-bottom: 44px; }
   .qs-group__head { margin-bottom: 18px; }
-  .qs-group__title { font-size: 1.35rem; margin: 0 0 4px; }
+  .qs-group__row { display: flex; align-items: center; gap: 12px; margin-bottom: 4px; }
+  .qs-group__title { font-size: 1.35rem; margin: 0; }
   .qs-group__blurb { color: var(--text-muted); margin: 0; font-size: 0.95rem; }
 
   .qs-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
@@ -81,6 +87,10 @@ const REPO_QS = 'https://github.com/schubergphilis/sqe/tree/main/quickstart';
     transition: box-shadow 0.15s ease, transform 0.15s ease, border-color 0.15s ease;
   }
   .qs-card:hover { box-shadow: 0 12px 32px -18px rgba(2, 12, 23, 0.4); transform: translateY(-1px); border-color: var(--sqe-blue); }
+  /* Embedded-mode cards carry the turquoise edge their group chip announces. */
+  .qs-card--embedded { border-top-color: var(--turquoise); }
+  .qs-card--embedded:hover { border-color: var(--turquoise); }
+  .qs-card--embedded:hover .qs-card__title, .qs-card--embedded .qs-card__link:hover { color: #0d7f83; }
   .qs-card__top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
   .qs-card__title { font-size: 1.02rem; margin: 0; }
   /* Whole card is a link to the walk-through: the title link stretches to cover

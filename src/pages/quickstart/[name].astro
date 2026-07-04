@@ -1,8 +1,9 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHero from '../../components/PageHero.astro';
 import { getCollection, render } from 'astro:content';
 import type { GetStaticPaths } from 'astro';
-import { allQuickstarts, docsUrl, repoUrl } from '../../data/quickstarts';
+import { groups, allQuickstarts, docsUrl, repoUrl } from '../../data/quickstarts';
 
 export const getStaticPaths = (async () => {
   const entries = await getCollection('quickstartOverview');
@@ -14,12 +15,24 @@ export const getStaticPaths = (async () => {
 
 const { entry, meta } = Astro.props;
 const { Content } = await render(entry);
+
+// Hero title = the overview's own H1 (the richer form); the markdown H1 is
+// hidden below so the heading isn't duplicated. Falls back to the card title.
+const h1 = entry.body?.match(/^#\s+(.+)$/m)?.[1]?.replace(/[*_`]/g, '').trim();
+const embeddedNames = new Set(groups.find((g) => g.key === 'Embedded')?.items.map((i) => i.name) ?? []);
+const mode = embeddedNames.has(meta.name) ? 'embedded' : 'server';
 ---
 <BaseLayout title={`${meta.title} — SQE quickstart | getsqe.com`} description={meta.blurb} darkHeader>
-  <section class="qd-hero"><div class="container">
-    <p class="qd-crumb"><a href="/quickstart">← All quickstarts</a></p>
-    <span class="qd-eyebrow">Quickstart{meta.experimental ? ' · experimental' : ''}</span>
-  </div></section>
+  <PageHero
+    eyebrow={`Quickstart${meta.experimental ? ' · experimental' : ''}`}
+    title={h1 ?? meta.title}
+    lede={meta.blurb}
+  >
+    <div class="qd-meta">
+      <span class:list={['badge-mode', `badge-mode--${mode}`]}>{mode === 'embedded' ? 'Embedded' : 'Server'}</span>
+      <a class="qd-crumb" href="/quickstart">← All quickstarts</a>
+    </div>
+  </PageHero>
   <section class="section"><div class="container qd-body">
     <article class="prose qd-overview"><Content /></article>
     <div class="qd-cta">
@@ -30,18 +43,18 @@ const { Content } = await render(entry);
   </div></section>
 </BaseLayout>
 <style>
-  .qd-hero { background: var(--space-gray); color:#fff; padding-block: clamp(32px,5vw,56px); }
-  .qd-crumb { margin:0 0 12px; font-size:0.9rem; } .qd-crumb a { color: var(--turquoise); }
-  .qd-eyebrow { font-family: var(--font-mono); color: var(--turquoise); font-size:0.82rem; letter-spacing:0.1em; font-weight:600; }
+  .qd-meta { display: flex; align-items: center; gap: 16px; margin-top: 18px; }
+  .qd-crumb { color: var(--turquoise); font-size: 0.9rem; font-weight: 600; }
   .qd-body { max-width: 820px; }
-  .qd-overview :global(h1) { font-size: clamp(1.8rem,3.5vw,2.4rem); margin:0 0 18px; }
-  .qd-overview :global(h2) { font-size:1.3rem; margin:32px 0 10px; padding-top:14px; border-top:1px solid var(--border); }
-  .qd-overview :global(h3) { font-size:1rem; font-family:var(--font-mono); color:var(--sqe-blue); margin:18px 0 6px; }
-  .qd-overview :global(pre) { background: var(--midnight); color:#e6edf3; border:1px solid rgba(30,232,237,0.18); border-radius:10px; padding:16px; overflow-x:auto; font-size:0.84rem; }
-  .qd-overview :global(table) { width:100%; border-collapse:collapse; font-size:0.9rem; }
-  .qd-overview :global(th), .qd-overview :global(td) { border:1px solid var(--border); padding:6px 10px; text-align:left; }
-  .qd-cta { display:flex; gap:14px; flex-wrap:wrap; align-items:center; margin-top:36px; padding-top:18px; border-top:1px solid var(--border); }
-  .qd-btn { font-weight:700; font-size:0.95rem; padding:9px 16px; border-radius:8px; border:1px solid var(--border); }
-  .qd-btn--primary { background: var(--sqe-blue); color:#fff; border-color: var(--sqe-blue); }
+  .qd-overview :global(h1) { display: none; }
+  .qd-overview :global(h2) { font-size: 1.3rem; margin: 32px 0 10px; padding-top: 14px; border-top: 1px solid var(--border); }
+  .qd-overview :global(h2:first-of-type) { margin-top: 0; padding-top: 0; border-top: 0; }
+  .qd-overview :global(h3) { font-size: 1rem; font-family: var(--font-mono); color: var(--sqe-blue); margin: 18px 0 6px; }
+  .qd-overview :global(pre) { background: var(--midnight); color: #e6edf3; border: 1px solid rgba(30,232,237,0.18); border-radius: 10px; padding: 16px; overflow-x: auto; font-size: 0.84rem; }
+  .qd-overview :global(table) { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+  .qd-overview :global(th), .qd-overview :global(td) { border: 1px solid var(--border); padding: 6px 10px; text-align: left; }
+  .qd-cta { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; margin-top: 36px; padding-top: 18px; border-top: 1px solid var(--border); }
+  .qd-btn { font-weight: 700; font-size: 0.95rem; padding: 9px 16px; border-radius: 8px; border: 1px solid var(--border); }
+  .qd-btn--primary { background: var(--sqe-blue); color: #fff; border-color: var(--sqe-blue); }
   .qd-btn--ghost { color: var(--text-muted); }
 </style>
