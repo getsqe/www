@@ -301,27 +301,35 @@
       "key": "server",
       "name": "Server",
       "tagline": "Coordinator + stateless workers. Flight SQL and Trino HTTP.",
-      "termTitle": "cluster — trino client",
+      "termTitle": "server — sqe-server · sqe-cli",
       "lines": [
         {
           "t": "cmd",
-          "s": "trino --server sqe:8080"
+          "s": "sqe-server --config sqe.toml"
         },
         {
           "t": "out",
-          "s": "authenticated as maria (OIDC)"
+          "s": "up · flight :50051 · trino :8080"
+        },
+        {
+          "t": "cmd",
+          "s": "sqe-cli --host sqe --user maria"
         },
         {
           "t": "sql",
-          "s": "trino> SELECT kind, count(*)"
+          "s": "sqe> SELECT kind, count(*)"
         },
         {
           "t": "sql",
-          "s": "   ...> FROM orders GROUP BY 1;"
+          "s": "  ...> FROM orders GROUP BY 1;"
         },
         {
           "t": "out",
           "s": "| purchase | 128 | · same result"
+        },
+        {
+          "t": "comment",
+          "s": "# or: trino --server sqe:8080"
         }
       ]
     }
