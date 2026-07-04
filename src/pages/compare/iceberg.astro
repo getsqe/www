@@ -1,27 +1,22 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import SectionHeading from '../../components/SectionHeading.astro';
+import PageHero from '../../components/PageHero.astro';
 import MatrixGrid from '../../components/MatrixGrid.astro';
 import matrix from '../../data/iceberg-matrix.json';
 ---
 <BaseLayout
   title="Iceberg matrix — SQE coverage | getsqe.com"
   description={`SQE scores ${matrix.score.raw}/${matrix.score.max} (${matrix.score.percent}%) on the public Iceberg matrix — top-five overall, the only non-Spark engine in the top five.`}
+  darkHeader
 >
+  <PageHero
+    eyebrow="Iceberg matrix"
+    title="Capability coverage, V2 and V3."
+    lede={`SQE is scored against the public <a href="https://icebergmatrix.org" rel="noopener">Iceberg matrix</a> rubric — a community scoreboard, not a vendor spec sheet. Each capability is rated <strong>full</strong>, <strong>partial</strong>, or <strong>none</strong> for format versions V2 and V3. The per-cell evidence lives in the <a href="${matrix.docUrl}" rel="noopener">source repository</a>.`}
+  />
   <section class="section">
     <div class="container">
-      <SectionHeading eyebrow="Iceberg matrix" title="Capability coverage, V2 and V3." />
-      <p class="lead">
-        SQE is scored against the public <a href="https://icebergmatrix.org" rel="noopener">Iceberg matrix</a>
-        rubric — a community scoreboard, not a vendor spec sheet. Each capability is rated
-        <strong>full</strong>, <strong>partial</strong>, or <strong>none</strong> for format versions V2 and V3.
-        The per-cell evidence lives in the <a href={matrix.docUrl} rel="noopener">source repository</a>.
-      </p>
       <MatrixGrid data={matrix} />
     </div>
   </section>
 </BaseLayout>
-
-<style>
-  .lead { max-width: 70ch; color: var(--text-muted); margin-bottom: 32px; font-size: 1.05rem; }
-</style>

@@ -423,7 +423,7 @@ user = "dev"
 roles = ["public"]
 
 [auth.role_mappings]
-"arn:aws:iam::ACCOUNT_ID:role/DataEngineering" = ["analyst", "writer"]
+"arn:aws:iam::123456789012:role/DataEngineering" = ["analyst", "writer"]
 "data-team" = ["analyst"]
 ```
 

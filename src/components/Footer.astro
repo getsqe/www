@@ -8,26 +8,31 @@ const year = new Date().getFullYear();
   <div class="container footer__inner">
     <div class="footer__brand">
       <span class="footer__logo">SQE</span>
-      <p class="footer__tag">Iceberg-first SQL that scales. Apache-2.0.</p>
+      <p class="footer__tag">The query engine for the Iceberg lakehouse. Apache-2.0.</p>
     </div>
     <nav class="footer__cols" aria-label="Footer">
       <div>
         <h4>Product</h4>
+        <a href="/quickstart">Quickstart</a>
+        <a href="/performance">Performance</a>
+        <a href={DOCS}>Documentation</a>
+      </div>
+      <div>
+        <h4>Compare</h4>
         <a href="/compare/iceberg">Iceberg matrix</a>
         <a href="/compare/trino">vs Trino</a>
         <a href="/compare/duckdb">vs DuckDB</a>
         <a href="/compare/features">SQL features</a>
       </div>
       <div>
-        <h4>Learn</h4>
-        <a href={DOCS}>Documentation</a>
-        <a href="/blog">Blog</a>
+        <h4>Resources</h4>
         <a href="/ebook">Sovereign by Design</a>
+        <a href="/blog">Blog</a>
         <a href="/roadmap">Roadmap</a>
-        <a href="/about">About SQE</a>
       </div>
       <div>
-        <h4>Source</h4>
+        <h4>Project</h4>
+        <a href="/about">About SQE</a>
         <a href={GITHUB} rel="noopener">GitHub ↗</a>
         <a href={`${GITHUB}/blob/main/LICENSE`} rel="noopener">Apache-2.0 license ↗</a>
       </div>
@@ -55,8 +60,11 @@ const year = new Date().getFullYear();
   .footer__tag { margin-top: 8px; font-size: 0.92rem; max-width: 32ch; }
   .footer__cols {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 28px;
+  }
+  @media (max-width: 560px) {
+    .footer__cols { grid-template-columns: repeat(2, 1fr); }
   }
   .footer__cols h4 {
     font-size: 0.78rem;

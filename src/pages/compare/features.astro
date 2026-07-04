@@ -1,6 +1,6 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import SectionHeading from '../../components/SectionHeading.astro';
+import PageHero from '../../components/PageHero.astro';
 import AsOf from '../../components/AsOf.astro';
 import { getEntry, render } from 'astro:content';
 
@@ -11,17 +11,16 @@ const { Content } = await render(entry);
 <BaseLayout
   title="SQL feature comparison — SQE vs Trino, Spark, DuckDB | getsqe.com"
   description="SQE's SQL surface across windows, aggregates, DML, Iceberg operations, and file-format table functions, compared with Trino, Spark SQL, and DuckDB."
+  darkHeader
 >
+  <PageHero
+    eyebrow="Comparison"
+    title="SQL feature comparison"
+    lede="SQE runs on <strong>Apache DataFusion 53.1</strong>, so the standard SQL surface — windows, aggregates, joins, CTEs, set operations — comes for free. SQE adds multi-catalog integration, pluggable auth, distributed execution, Iceberg DML, and a single-binary embedded mode. Here it is side by side with Trino, Spark SQL, and DuckDB."
+  />
   <section class="section">
     <div class="container doc">
-      <SectionHeading eyebrow="Comparison" title="SQL feature comparison" />
       <AsOf />
-      <p class="lead">
-        SQE runs on <strong>Apache DataFusion 53.1</strong>, so the standard SQL surface — windows,
-        aggregates, joins, CTEs, set operations — comes for free. SQE adds multi-catalog
-        integration, pluggable auth, distributed execution, Iceberg DML, and a single-binary
-        embedded mode. Here it is side by side with Trino, Spark SQL, and DuckDB.
-      </p>
       <p class="crumb"><a href="/compare/iceberg">Iceberg matrix</a> · <a href="/compare/trino">vs Trino</a> · <a href="/compare/duckdb">vs DuckDB</a></p>
       <article class="prose"><Content /></article>
     </div>
@@ -30,6 +29,5 @@ const { Content } = await render(entry);
 
 <style>
   .doc { max-width: 900px; }
-  .lead { font-size: 1.1rem; color: var(--text); max-width: 72ch; }
   .crumb { font-size: 0.9rem; color: var(--text-muted); margin: 8px 0 6px; }
 </style>

@@ -18,9 +18,9 @@ noting semantic differences and gaps.
 | Scalar: Regex | 6 | 6 | 0 | 0 | 100% |
 | Scalar: Conditional | 8 | 7 | 1 | 0 | 100% |
 | Scalar: Conversion | 10 | 9 | 0 | 1 | 90% |
-| Aggregate | 33 | 31 | 0 | 2 | 93.9% |
+| Aggregate | 35 | 33 | 0 | 2 | 94.3% |
 | Window | 14 | 13 | 0 | 1 | 92.9% |
-| DDL/DML | 31 + 1🔧 | 26 | 2 | 3 | 90.3% |
+| DDL/DML | 37 + 1🔧 | 32 | 2 | 3 | 91.9% |
 | Type System | 27 | 22 | 0 | 5 | 81.5% |
 | Iceberg-Specific | 19 | 16 | 0 | 3 | 84.2% |
 
@@ -114,6 +114,18 @@ Each section lists Trino functions with their SQE status:
 | `to_base(n, radix)` | `to_base(n, radix)` | ✅ | Trino compat UDF |
 | `truncate(x[, n])` | `truncate(x[, n])` | ✅ | Trino compat UDF; truncates toward zero with optional decimal-precision argument |
 | `width_bucket(x, bound1, bound2, n)` | Same | ✅ | Native DataFusion (built-in in DF 52) |
+| `bitwise_and(x, y)` / `bitwise_or(x, y)` / `bitwise_xor(x, y)` | Same | ✅ | Trino compat UDF; widens integer args to `bigint` like Trino |
+| `bitwise_not(x)` | `bitwise_not(x)` | ✅ | Trino compat UDF |
+| `bitwise_left_shift(v, s)` / `bitwise_right_shift(v, s)` | Same | ✅ | Trino compat UDF; logical (zero-fill) shift on 64 bits. Trino's narrower `integer`-width shift is not reachable because DataFusion types integer literals as `bigint` |
+
+## Scalar Functions: Array
+
+| Trino Function | SQE Equivalent | Status | Notes |
+|---|---|---|---|
+| `sequence(start, stop)` / `sequence(start, stop, step)` | `sequence(...)` | ✅ | Trino spelling of DataFusion's inclusive `generate_series`; integer and date/timestamp + `INTERVAL` forms. The one gap is 2-arg descending (`sequence(5, 1)`), which needs an explicit negative step |
+| `slice(array, start, length)` | `slice(array, start, length)` | ✅ | Trino compat UDF; 1-based, negative `start` counts from the end, `length` clamps to the array end |
+| `element_at(array, n)` | `element_at(array, n)` | ✅ | Trino compat UDF; 1-based, negative from the end, out-of-bounds returns NULL. Also handles `element_at(map, key)` returning the scalar value |
+| `contains(array, x)` | `contains(array, x)` | ✅ | Trino compat UDF; three-valued (NULL when `x` is absent but the array holds a NULL). The string `contains(haystack, needle)` form is preserved |
 
 ## Scalar Functions: Date/Time
 
@@ -144,7 +156,7 @@ Each section lists Trino functions with their SQE status:
 | `month(d)` | `month(d)` | ✅ | Trino compat UDF |
 | `week(d)` | `week(d)` | ✅ | Trino compat UDF |
 | `day(d)` / `day_of_month(d)` | `day(d)` | ✅ | Trino compat UDF |
-| `day_of_week(d)` / `dow(d)` | `day_of_week(d)` | ✅ | Trino compat UDF |
+| `day_of_week(d)` / `dow(d)` | `day_of_week(d)` | ✅ | Trino compat UDF; ISO day-of-week Monday=1 .. Sunday=7 (was Sunday=0 before #361) |
 | `day_of_year(d)` / `doy(d)` | `day_of_year(d)` | ✅ | Trino compat UDF |
 | `hour(ts)` | `hour(ts)` | ✅ | Trino compat UDF |
 | `minute(ts)` | `minute(ts)` | ✅ | Trino compat UDF |
@@ -235,6 +247,7 @@ Each section lists Trino functions with their SQE status:
 |---|---|---|---|
 | `count(*)` / `count(x)` | Same | ✅ | |
 | `count(DISTINCT x)` | Same | ✅ | |
+| `count_if(pred)` | `count_if(pred)` | ✅ | Trino compat UDAF; counts TRUE rows, ignores false and NULL |
 | `sum(x)` | Same | ✅ | |
 | `avg(x)` | Same | ✅ | |
 | `min(x)` / `max(x)` | Same | ✅ | |
@@ -243,13 +256,15 @@ Each section lists Trino functions with their SQE status:
 | `array_agg(x)` | `array_agg(x)` | ✅ | |
 | `array_agg(x ORDER BY y)` | Same | ✅ | DataFusion supports ordered agg |
 | `string_agg(x, sep)` | `string_agg(x, sep)` | ✅ | |
-| `listagg(x, sep)` | `listagg(x, sep)` | ✅ | DataFusion's `string_agg` UDAF re-registered with `listagg` alias |
+| `listagg(x, sep)` | `listagg(x, sep)` | ✅ | DataFusion's `string_agg` UDAF re-registered with `listagg` alias. `listagg(x, sep) WITHIN GROUP (ORDER BY ...)` is rewritten to `string_agg(x, sep ORDER BY ...)`; `percentile_cont` / `percentile_disc` keep native WITHIN GROUP |
 | `approx_distinct(x)` | `approx_distinct(x)` | ✅ | |
 | `approx_percentile(x, p)` | `approx_percentile(x, p)` | ✅ | DataFusion's `approx_percentile_cont` UDAF re-registered with `approx_percentile` alias |
 | `stddev(x)` / `stddev_samp(x)` | Same | ✅ | |
 | `stddev_pop(x)` | Same | ✅ | |
-| `variance(x)` / `var_samp(x)` | Same | ✅ | |
+| `variance(x)` / `var_samp(x)` | Same | ✅ | DataFusion's sample-variance UDAF (`var`) re-registered with `variance` alias |
 | `var_pop(x)` | Same | ✅ | |
+| `skewness(x)` | `skewness(x)` | ✅ | Real `AggregateUDFImpl` in the sqe-trino-functions crate. Online central moments; population skewness `sqrt(n)*m3/m2^1.5` matching Trino (NULL for n<3) |
+| `kurtosis(x)` | `kurtosis(x)` | ✅ | Same accumulator as `skewness`. Sample excess kurtosis matching Trino's formula (NULL for n<4) |
 | `covar_samp(y, x)` | `covar_samp(y, x)` | ✅ | |
 | `covar_pop(y, x)` | `covar_pop(y, x)` | ✅ | |
 | `corr(y, x)` | `corr(y, x)` | ✅ | |
@@ -293,10 +308,11 @@ Each section lists Trino functions with their SQE status:
 |---|---|---|---|
 | `CREATE TABLE (cols) WITH (...)` | `CREATE TABLE (cols) WITH (...)` | ✅ | Trino's `WITH (foo = 'bar')` syntax merges into table properties via `merge_user_table_properties` in `write_handler.rs:589-590`, alongside `TBLPROPERTIES (...)`. Both spellings produce identical Iceberg metadata |
 | `CREATE TABLE AS SELECT` | Same | ✅ | |
+| `CREATE TABLE ... LIKE` | `CREATE TABLE new (LIKE src)` | ✅ | Classifier rewrites the parenthesized form (unsupported by GenericDialect) to plain LIKE; `handle_create_table_like` copies the source schema. Unqualified source names resolve against the session schema (X-Trino-Schema) |
 | `DROP TABLE` | Same | ✅ | |
 | `ALTER TABLE ... RENAME TO` | Same | ✅ | |
 | `ALTER TABLE ... ADD COLUMN` | Same | ✅ | |
-| `ALTER TABLE ... DROP COLUMN` | Same | ✅ | |
+| `ALTER TABLE ... DROP COLUMN` | Same | ✅ | Top-level and nested struct-subfield drops. `DROP COLUMN a.b` is a pre-parse intercept (sqlparser cannot parse the dotted path) routed to `drop_nested_column`, which rebuilds the struct without the leaf via `remove_struct_subfield` and commits an Iceberg schema update. Missing leaf errors unless `IF EXISTS`. Schema surgery is unit-verified; the end-to-end Iceberg commit is best confirmed against a live stack |
 | `ALTER TABLE ... RENAME COLUMN` | Same | ✅ | |
 | `ALTER TABLE ... SET/DROP NOT NULL` | Same | ✅ | |
 | `ALTER TABLE ... SET PROPERTIES` | `ALTER TABLE ... SET TBLPROPERTIES` | ✅ | Iceberg TableUpdate::SetProperties |
@@ -316,13 +332,22 @@ Each section lists Trino functions with their SQE status:
 | `SHOW TABLES` | Same | ✅ | |
 | `SHOW COLUMNS FROM` | `SHOW COLUMNS FROM` | ✅ | New `handle_show_columns` handler translates Trino's `SHOW COLUMNS FROM ns.t` into a query against `information_schema.columns`. Returns `(column_name, data_type, is_nullable)`, the subset dbt and BI clients use for schema inspection |
 | `SHOW CREATE TABLE` | Same | ✅ | Reconstructs DDL from information_schema |
+| `SHOW CREATE SCHEMA` | `SHOW CREATE SCHEMA <name>` | ✅ | Classifier detects the form (sqlparser cannot parse it) and `handle_show_create_schema` reconstructs the namespace DDL as a single `Create Schema` column with optional `WITH ( location = '...' )`. Missing schema errors like Trino |
+| `SHOW FUNCTIONS` | `SHOW FUNCTIONS` | ✅ | `handle_show_functions` lists scalar/aggregate/window functions in Trino's six-column shape (`Function Name`, `Return Type`, `Argument Types`, `Function Type`, `Deterministic`, `Description`). Row content differs from Trino by design (different function sets) |
 | `SHOW STATS FOR` | Same | ✅ | Returns row_count, data_file_count, total_size from snapshot summary |
+| `SHOW ROLES` / `SHOW CURRENT ROLES` / `SHOW ROLE GRANTS` | Returns the caller's roles | ✅ | SQE derives roles from the OIDC token (no global role registry), so all three return the caller's own roles under a `Role` column. Lets JDBC clients that probe roles on connect proceed |
+| `SET SESSION iceberg.compression_codec` | Applied to writes | ✅ | The per-session codec now reaches the Parquet writer (session value wins over `catalog.parquet_compression`); previously echoed to the client but ignored |
+| `SET TIME ZONE '<tz>'` | Accepted no-op | ✅ | JDBC clients emit this on connect. Accepted as a no-op (FINISHED, no rows); SQE has no per-session zone, so the engine default is kept. Other unsupported `SET` forms still error |
+| `TABLE <name>` | `SELECT * FROM <name>` | ✅ | Parse-gated tokenizer rewrite (`rewrite_bare_table`) turns the leading `TABLE` keyword into `SELECT * FROM`, preserving trailing `ORDER BY` / `LIMIT` / `OFFSET`. No-op for CREATE/DROP/SHOW CREATE TABLE |
+| `ANALYZE <table>` | Accepted no-op | ✅ | Accepted as a statistics no-op so client tooling that issues ANALYZE on connect proceeds. SQE does not persist table stats |
 | `EXPLAIN` | Same | ✅ | DataFusion explain |
 | `EXPLAIN ANALYZE` | `EXPLAIN ANALYZE` | ✅ | Routed through `parse_and_classify` -> `Statement::Explain { analyze: true }` -> `explain_handler.analyze()` since Phase 2; the previous "different keyword" caveat was a stale doc claim. `EXPLAIN FULL` is an SQE-specific extension on top |
 | `USE catalog.schema` | Same | ✅ | Parsed and accepted (session-level, sets default catalog/schema) |
 | `PREPARE` / `EXECUTE` | Partial | ⚠️ | DataFusion has infrastructure, SQL integration incomplete |
 | `CALL procedure(...)` | Same (system.* only) | ✅ | Iceberg maintenance procedures are wired: `CALL system.expire_snapshots(...)`, `CALL system.remove_orphan_files(...)`, `CALL system.rewrite_data_files(...)`, `CALL system.rewrite_manifests(...)`. User-defined stored procedures return an informative `NotImplemented` ("SQE does not have stored procedures") rather than a parse error |
 | `GRANT` / `REVOKE` | Planned (Plan C) | 🔧 | SQE-specific grant system |
+
+**Identifier case.** Unquoted identifiers fold to lowercase, matching Trino: `CREATE TABLE t (testInteger int)` stores the column as `testinteger`, and `SELECT testInteger` resolves it. Double-quoted identifiers preserve case (`"testInteger"` stays `testInteger` and must be quoted to reference). This applies to CREATE TABLE columns, ALTER TABLE ADD/DROP/RENAME/ALTER COLUMN, and PARTITIONED BY refs. Caveat: a pre-existing mixed-case column (e.g. a table created by another engine) must be referenced with quotes, exactly as in Trino.
 
 ## Type System
 
@@ -348,7 +373,7 @@ Each section lists Trino functions with their SQE status:
 | `INTERVAL DAY TO SECOND` | `Interval(DayTime)` | ✅ | |
 | `ARRAY(T)` | `List(T)` | ✅ | |
 | `MAP(K, V)` | `Map(K, V)` | ✅ | |
-| `ROW(fields...)` | `Struct(fields...)` | ✅ | |
+| `ROW(fields...)` | `Struct(fields...)` | ✅ | Single-level and nested/parameterized ROW casts. `CAST(row(...) AS row(a int, b row(x int)))` is rewritten pre-parse to nested `named_struct(...)` (`rewrite_nested_row_cast`), which plans and serializes over the wire as a ROW. Full nested struct-value wire parity vs Trino's `[1,[10]]` array shape is per the rewrite's design, not stack-verified here |
 | `JSON` | `Utf8` | ✅ | `CREATE TABLE t(payload JSON)` aliases to `Utf8`. `CAST(json_col AS BIGINT|VARCHAR|DOUBLE)` rides DataFusion's built-in Utf8→target coercion. Full JSON extraction via `json_extract`, `json_extract_scalar`, `json_array_length`, `json_parse`, `json_get_str/int/float/bool` |
 | `UUID` | `Utf8` | ✅ | `CREATE TABLE t(id UUID)` aliases UUID to Utf8 in `sql_type_to_arrow`. Equality, regex, and `CAST(... AS UUID)` work via the string form. No native UUID logical type (Arrow has none); UUIDv4 generation needs a UDF if required |
 | `IPADDRESS` | `VARCHAR` | ⚠️ | Stored as VARCHAR, no IP-specific functions (subnet containment, etc.) |

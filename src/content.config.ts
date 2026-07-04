@@ -27,4 +27,9 @@ const quickstartOverview = defineCollection({
   loader: glob({ pattern: '*.md', base: './src/content/quickstart-overview' }),
 });
 
-export const collections = { compare, ebook, blog, quickstartOverview };
+// Authored website prose synced from docs/site/web (about, performance).
+const web = defineCollection({
+  loader: glob({ pattern: '*.md', base: './src/content/web' }),
+});
+
+export const collections = { compare, ebook, blog, quickstartOverview, web };

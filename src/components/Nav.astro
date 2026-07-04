@@ -4,15 +4,29 @@ const GITHUB = 'https://github.com/schubergphilis/sqe';
 const DOCS = 'https://docs.getsqe.com';
 const links = [
   { href: '/quickstart', label: 'Quickstart' },
-  { href: '/compare/iceberg', label: 'Iceberg matrix' },
-  { href: '/compare/trino', label: 'vs Trino' },
-  { href: '/compare/duckdb', label: 'vs DuckDB' },
-  { href: '/ebook', label: 'Book' },
-  { href: '/blog', label: 'Blog' },
-  { href: '/roadmap', label: 'Roadmap' },
-  { href: '/about', label: 'About' },
+  { href: '/performance', label: 'Performance' },
 ];
+const menus = [
+  {
+    label: 'Compare',
+    items: [
+      { href: '/compare/iceberg', label: 'Iceberg matrix' },
+      { href: '/compare/trino', label: 'vs Trino' },
+      { href: '/compare/duckdb', label: 'vs DuckDB' },
+    ],
+  },
+  {
+    label: 'Resources',
+    items: [
+      { href: '/ebook', label: 'Book' },
+      { href: '/blog', label: 'Blog' },
+      { href: '/roadmap', label: 'Roadmap' },
+    ],
+  },
+];
+const tail = [{ href: '/about', label: 'About' }];
 const path = Astro.url.pathname;
+const isActive = (href: string) => path.startsWith(href);
 ---
 <header class="nav">
   <div class="container nav__inner">
@@ -22,7 +36,22 @@ const path = Astro.url.pathname;
     </a>
     <nav class="nav__links" aria-label="Primary">
       {links.map((l) => (
-        <a href={l.href} class:list={['nav__link', path.startsWith(l.href) && 'is-active']}>{l.label}</a>
+        <a href={l.href} class:list={['nav__link', isActive(l.href) && 'is-active']}>{l.label}</a>
+      ))}
+      {menus.map((m) => (
+        <div class:list={['nav__menu', m.items.some((i) => isActive(i.href)) && 'is-open-active']}>
+          <button type="button" class:list={['nav__link', 'nav__menu-btn', m.items.some((i) => isActive(i.href)) && 'is-active']} aria-haspopup="true">
+            {m.label} <span class="nav__caret" aria-hidden="true">▾</span>
+          </button>
+          <div class="nav__panel">
+            {m.items.map((i) => (
+              <a href={i.href} class:list={['nav__panel-link', isActive(i.href) && 'is-active']}>{i.label}</a>
+            ))}
+          </div>
+        </div>
+      ))}
+      {tail.map((l) => (
+        <a href={l.href} class:list={['nav__link', isActive(l.href) && 'is-active']}>{l.label}</a>
       ))}
       <a href={DOCS} class="nav__link">Docs</a>
       <a href={GITHUB} class="nav__gh" rel="noopener">GitHub ↗</a>
@@ -74,6 +103,60 @@ const path = Astro.url.pathname;
   }
   .nav__link:hover, .nav__link.is-active { color: #fff; text-decoration: none; }
   .nav__link.is-active { color: var(--turquoise); }
+  .nav__menu { position: relative; }
+  .nav__menu-btn {
+    background: none;
+    border: 0;
+    padding: 0;
+    font: inherit;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .nav__caret {
+    font-size: 0.7em;
+    opacity: 0.6;
+    transition: transform 0.15s ease;
+  }
+  .nav__panel {
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%);
+    min-width: 168px;
+    display: none;
+    flex-direction: column;
+    padding: 8px;
+    background: var(--space-gray);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 10px;
+    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.45);
+    z-index: 40;
+  }
+  /* Bridge the hover gap between trigger and panel. */
+  .nav__panel::before {
+    content: '';
+    position: absolute;
+    top: -12px;
+    left: 0;
+    right: 0;
+    height: 12px;
+  }
+  .nav__menu:hover .nav__panel,
+  .nav__menu:focus-within .nav__panel { display: flex; }
+  .nav__menu:hover .nav__caret,
+  .nav__menu:focus-within .nav__caret { transform: rotate(180deg); }
+  .nav__panel-link {
+    color: rgba(255, 255, 255, 0.82);
+    font-size: 0.9rem;
+    font-weight: 600;
+    padding: 8px 12px;
+    border-radius: 7px;
+    white-space: nowrap;
+  }
+  .nav__panel-link:hover { color: #fff; background: rgba(255, 255, 255, 0.08); text-decoration: none; }
+  .nav__panel-link.is-active { color: var(--turquoise); }
   .nav__gh {
     color: #fff;
     font-weight: 700;
@@ -86,5 +169,15 @@ const path = Astro.url.pathname;
   @media (max-width: 720px) {
     .nav__sub { display: none; }
     .nav__links { gap: 14px; }
+    /* No room for hover panels on small screens: show group items inline. */
+    .nav__menu { display: contents; }
+    .nav__menu-btn { display: none; }
+    .nav__panel {
+      position: static;
+      transform: none;
+      display: contents;
+    }
+    .nav__panel-link { padding: 0; }
+    .nav__panel-link:hover { background: none; }
   }
 </style>

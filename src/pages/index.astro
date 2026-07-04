@@ -5,54 +5,44 @@ import SectionHeading from '../components/SectionHeading.astro';
 import FeatureGrid from '../components/FeatureGrid.astro';
 import CompareTable from '../components/CompareTable.astro';
 import matrix from '../data/iceberg-matrix.json';
+import perf from '../data/performance.json';
+import landing from '../data/landing.json';
 
 const DOCS = 'https://docs.getsqe.com';
 const GITHUB = 'https://github.com/schubergphilis/sqe';
 
-// "What" feature grid — verbatim claims from README.
-const features = [
-  { title: 'One binary, two modes', body: 'Embedded single-process engine <em>and</em> distributed coordinator + stateless workers — the same SQL surface, the same binary.' },
-  { title: 'Native Iceberg V2 + V3', body: 'Read <em>and</em> write, not read-only. Position &amp; equality deletes, merge-on-read, copy-on-write, schema evolution.' },
-  { title: 'Per-query identity', body: 'OIDC password grant; the user’s bearer token is passed through to the catalog and S3 on <em>every</em> query.' },
-  { title: 'Policy as plan rewriting', body: 'Row filters and column masks via OPA or Cedar, enforced at the LogicalPlan layer before the optimizer runs.' },
-  { title: '7 catalog backends', body: 'Polaris, Nessie, Unity Catalog OSS, AWS Glue, S3 Tables, Hive Metastore, JDBC — plus Hadoop storage. Multi-cloud.' },
-  { title: 'Two wire protocols', body: 'Arrow Flight SQL and Trino HTTP from the same coordinator. Connect existing Trino clients unchanged.' },
-  { title: 'Rust, no JVM', body: 'Sub-second cold start. A C++/DuckDB-class footprint with a distributed story the JVM engines charge for.' },
-  { title: 'Column-level lineage', body: 'Native OpenLineage 2-0-2 emitter with column-level lineage on writes. File and HTTP sinks, disk-spool fallback.' },
-];
+// Authored copy synced from docs/site/web/landing.json (single content home).
+const { features, compareHead, compareRows, bench } = landing;
 
-// "Proof" — SQE vs Trino vs DuckDB (README "How SQE differs").
-const compareHead = ['', 'SQE', 'Trino', 'DuckDB'];
-const compareRows = [
-  { label: 'Embedded mode (one binary)', cells: [{ t: 'yes', tone: 'yes' }, { t: 'no', tone: 'no' }, { t: 'yes', tone: 'yes' }] },
-  { label: 'Distributed mode', cells: [{ t: 'yes', tone: 'yes' }, { t: 'yes', tone: 'yes' }, { t: 'no', tone: 'no' }] },
-  { label: 'Iceberg V2 + V3 read + write', cells: [{ t: 'native', tone: 'emph' }, { t: 'V2 + partial V3' }, { t: 'read-only' }] },
-  { label: 'Per-query OIDC passthrough', cells: [{ t: 'yes', tone: 'yes' }, { t: 'service acct only' }, { t: 'n/a' }] },
-  { label: 'OPA / Cedar at LogicalPlan', cells: [{ t: 'yes', tone: 'yes' }, { t: 'no', tone: 'no' }, { t: 'no', tone: 'no' }] },
-  { label: 'Multi-catalog in one engine', cells: [{ t: '7 backends', tone: 'emph' }, { t: 'one at a time' }, { t: 'per-extension' }] },
-  { label: 'Wire protocols', cells: [{ t: 'Flight SQL + Trino' }, { t: 'Trino HTTP' }, { t: 'extension' }] },
-  { label: 'Runtime', cells: [{ t: 'Rust, no JVM', tone: 'emph' }, { t: 'JVM' }, { t: 'C++' }] },
-  { label: 'Cold start', cells: [{ t: 'sub-second', tone: 'yes' }, { t: 'tens of seconds' }, { t: 'sub-second', tone: 'yes' }] },
-  { label: 'OpenLineage emitter', cells: [{ t: 'native, column-level', tone: 'emph' }, { t: 'plugin' }, { t: 'no', tone: 'no' }] },
-];
-
-// SF1 benchmark suite vs Trino 465 (README).
-const bench = [
-  { suite: 'TPC-H (22)', sqe: '16.8s', trino: '26.7s', speedup: '1.6×', pass: '22/22', win: true },
-  { suite: 'SSB (13)', sqe: '8.3s', trino: '5.8s', speedup: '0.70× slower', pass: '13/13', win: false },
-  { suite: 'TPC-DS (99)', sqe: '13.4s', trino: '45.6s', speedup: '3.4×', pass: '93/99', win: true },
-  { suite: 'TPC-C (8 read)', sqe: '0.41s', trino: '2.65s', speedup: '6.5×', pass: '8/8', win: true },
-  { suite: 'TPC-E (11)', sqe: '9.3s', trino: '172.0s', speedup: '18.5×', pass: '11/11', win: true },
-  { suite: 'TPC-BB (10)', sqe: '28.0s', trino: '255.7s', speedup: '9.1×', pass: '10/10', win: true },
-  { suite: 'ClickBench (43)', sqe: '1.3s', trino: '4.46s', speedup: '3.4×', pass: '43/43', win: true },
-];
+// Quickstart teaser cards: names picked in landing.json, metadata from quickstarts.json.
+import { groups as qsGroups, allQuickstarts } from '../data/quickstarts';
+const embeddedNames = new Set(qsGroups.find((g) => g.key === 'Embedded')?.items.map((i) => i.name) ?? []);
+const teaser = (landing.quickstartTeaser ?? [])
+  .map((name) => allQuickstarts.find((q) => q.name === name))
+  .filter((q) => !!q)
+  .map((q) => ({ ...q, mode: embeddedNames.has(q.name) ? 'embedded' : 'server' }));
 ---
 
 <BaseLayout
-  title="SQE — Sovereign Query Engine | Iceberg-first SQL that scales"
+  title="SQE — The query engine for the Iceberg lakehouse"
   darkHeader
 >
   <Hero />
+
+  <!-- MODE STRIP -->
+  {landing.heroModes && (
+    <section class="mode-strip">
+      <div class="container mode-strip__grid">
+        {landing.heroModes.map((m) => (
+          <a class="card mode-card" href={m.key === 'embedded' ? '/quickstart#embedded' : '/quickstart#catalog-authentication'}>
+            <span class:list={['badge-mode', 'badge-mode--onlight', `badge-mode--${m.key}`]}>{m.name}</span>
+            <p class="mode-card__tag">{m.tagline}</p>
+            <span class="mode-card__go">Quickstarts →</span>
+          </a>
+        ))}
+      </div>
+    </section>
+  )}
 
   <!-- WHY -->
   <section class="section" id="why">
@@ -94,7 +84,27 @@ const bench = [
   <section class="section section--tight what" id="what">
     <div class="container">
       <SectionHeading eyebrow="What it is" title="Everything in one engine." />
-      <FeatureGrid items={features} columns={4} />
+      {features.some((f) => f.pillar) ? (
+        <div class="pillars">
+          {[
+            { key: 'iceberg', head: 'Iceberg-native read + write' },
+            { key: 'identity', head: 'Per-query identity' },
+            { key: 'open', head: 'Open + everywhere' },
+          ].map((p) => (
+            <div class="pillar">
+              <h3 class="pillar__head section-marker">{p.head}</h3>
+              {features.filter((f) => f.pillar === p.key).map((f) => (
+                <div class="pillar__item">
+                  <h4>{f.title}</h4>
+                  <p set:html={f.body} />
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+      ) : (
+        <FeatureGrid items={features} columns={4} />
+      )}
     </div>
   </section>
 
@@ -115,7 +125,7 @@ sqe> ATTACH 'http://catalog.example.com/api/catalog' AS partner_cat
 sqe> SELECT * FROM partner_cat.sales.orders LIMIT 10;`}</code></pre>
         </div>
         <div>
-          <h3 class="section-marker">Cluster — Polaris + S3 + SQE locally</h3>
+          <h3 class="section-marker">Server — Polaris + S3 + SQE locally</h3>
           <pre class="code"><code>{`docker compose -f docker-compose.test.yml up -d
 ./scripts/bootstrap-test.sh
 cargo run --release --bin sqe-coordinator -- tests/sqe-test.toml
@@ -135,7 +145,7 @@ sqe> SELECT * FROM test_warehouse.default.my_table LIMIT 10;`}</code></pre>
   <!-- PROOF -->
   <section class="section proof" id="proof">
     <div class="container">
-      <SectionHeading eyebrow="Receipts" title="How SQE differs." />
+      <SectionHeading eyebrow="SQE vs Trino vs DuckDB" title="One engine instead of two." />
       <CompareTable head={compareHead} rows={compareRows} />
 
       <h3 class="proof-sub section-marker">Performance — SF1, vs Trino 465</h3>
@@ -171,6 +181,48 @@ sqe> SELECT * FROM test_warehouse.default.my_table LIMIT 10;`}</code></pre>
     </div>
   </section>
 
+  <!-- PERFORMANCE TEASER -->
+  <section class="section pf-teaser-sec" id="performance">
+    <div class="container">
+      <SectionHeading eyebrow="Performance" title="Six of seven suites, faster than Trino." center />
+      <div class="pf-teaser">
+        <div class="pf-teaser__stat"><b>{perf.headline.suitesWon}</b><span>suites vs {perf.headline.vsTrino}</span></div>
+        <div class="pf-teaser__stat"><b>{perf.headline.queriesPass}</b><span>queries pass, validated</span></div>
+        <div class="pf-teaser__stat"><b>18.5×</b><span>top speedup</span></div>
+      </div>
+      <p class="pf-teaser__cta"><a href="/performance">See the performance leaps →</a></p>
+    </div>
+  </section>
+  <style>
+    .pf-teaser { display:flex; gap:18px; justify-content:center; flex-wrap:wrap; margin:8px 0 18px; }
+    .pf-teaser__stat { text-align:center; min-width:130px; }
+    .pf-teaser__stat b { display:block; font-size:1.9rem; color: var(--sqe-blue); font-weight:800; }
+    .pf-teaser__stat span { font-size:0.84rem; color: var(--text-muted); }
+    .pf-teaser__cta { text-align:center; font-weight:700; }
+  </style>
+
+  <!-- QUICKSTARTS TEASER -->
+  {teaser.length > 0 && (
+    <section class="section qs-teaser-sec">
+      <div class="container">
+        <SectionHeading eyebrow="Quickstarts" title="Running in minutes." center />
+        <div class="qs-teaser">
+          {teaser.map((q) => (
+            <a class="card qs-tease" href={`/quickstart/${q.name}`}>
+              <span class:list={['badge-mode', 'badge-mode--onlight', `badge-mode--${q.mode}`]}>{q.mode === 'embedded' ? 'Embedded' : 'Server'}</span>
+              <h3>{q.title}</h3>
+              <p>{q.blurb}</p>
+            </a>
+          ))}
+          <a class="card qs-tease qs-tease--all" href="/quickstart">
+            <h3>All quickstarts →</h3>
+            <p>Every catalog backend, both modes, each one runnable end to end.</p>
+          </a>
+        </div>
+      </div>
+    </section>
+  )}
+
   <!-- RECENTLY SHIPPED -->
   <section class="shipped">
     <div class="container shipped__inner">
@@ -189,6 +241,14 @@ sqe> SELECT * FROM test_warehouse.default.my_table LIMIT 10;`}</code></pre>
 </BaseLayout>
 
 <style>
+  .mode-strip { padding-block: 26px 0; }
+  .mode-strip__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .mode-card { display: flex; flex-direction: column; gap: 8px; }
+  .mode-card:hover { text-decoration: none; }
+  .mode-card__tag { margin: 0; color: var(--text); font-weight: 600; font-size: 1rem; }
+  .mode-card__go { font-weight: 700; font-size: 0.88rem; color: var(--sqe-blue); }
+  @media (max-width: 720px) { .mode-strip__grid { grid-template-columns: 1fr; } }
+
   .why-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
   .why-card { display: flex; flex-direction: column; }
   .why-stat { margin-bottom: 8px; }
@@ -198,6 +258,23 @@ sqe> SELECT * FROM test_warehouse.default.my_table LIMIT 10;`}</code></pre>
   .why-link { font-weight: 700; font-size: 0.9rem; margin-top: 10px; }
 
   .what { background: #fff; border-block: 1px solid var(--border); }
+  .pillars { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; }
+  .pillar__head { font-size: 1.08rem; margin-bottom: 16px; }
+  .pillar__item { margin-bottom: 16px; }
+  .pillar__item h4 { font-size: 0.95rem; margin: 0 0 4px; }
+  .pillar__item p { font-size: 0.88rem; color: var(--text-muted); margin: 0; }
+  @media (max-width: 880px) { .pillars { grid-template-columns: 1fr; gap: 20px; } }
+
+  .qs-teaser-sec { background: #fff; border-top: 1px solid var(--border); }
+  .qs-teaser { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  .qs-tease { display: flex; flex-direction: column; gap: 8px; }
+  .qs-tease:hover { text-decoration: none; }
+  .qs-tease h3 { font-size: 1rem; margin: 0; }
+  .qs-tease p { font-size: 0.88rem; color: var(--text-muted); margin: 0; flex: 1; }
+  .qs-tease--all { background: var(--soft-blue); justify-content: center; }
+  .qs-tease--all h3 { color: var(--sqe-blue); }
+  @media (max-width: 880px) { .qs-teaser { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 560px) { .qs-teaser { grid-template-columns: 1fr; } }
 
   .how-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
   .how-grid h3 { font-size: 1.1rem; margin-bottom: 14px; }

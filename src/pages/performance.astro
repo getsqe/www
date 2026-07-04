@@ -1,0 +1,105 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHero from '../components/PageHero.astro';
+import SectionHeading from '../components/SectionHeading.astro';
+import AsOf from '../components/AsOf.astro';
+import perf from '../data/performance.json';
+
+const DOCS = 'https://docs.getsqe.com';
+const fmtDate = (iso: string) =>
+  new Date(iso + 'T00:00:00Z').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+---
+<BaseLayout
+  title="Performance — SQE vs Trino 465 | getsqe.com"
+  description="SQE wins six of seven benchmark suites against Trino 465 at SF1, with 222/222 queries differentially validated. Decisive on smaller scales, closing fast at SF10+."
+  darkHeader
+>
+  <PageHero eyebrow="Performance" title="Six of seven suites. Faster than Trino." lede={perf.headline.validated}>
+    <div class="pf-stats">
+      <div class="pf-stat"><span class="pf-num">{perf.headline.suitesWon}</span><span class="pf-lbl">suites won vs {perf.headline.vsTrino}</span></div>
+      <div class="pf-stat"><span class="pf-num">{perf.headline.queriesPass}</span><span class="pf-lbl">queries pass, differentially validated</span></div>
+      <div class="pf-stat"><span class="pf-num">18.5×</span><span class="pf-lbl">top suite speedup (TPC-E)</span></div>
+    </div>
+  </PageHero>
+
+  <section class="section">
+    <div class="container pf-body">
+      <SectionHeading eyebrow="Where we stand" title="Decisive up to SF1, closing fast at SF10+" />
+      <p class="pf-copy">{perf.scales.dominant}</p>
+      <p class="pf-copy">{perf.scales.progress}</p>
+      <p class="pf-scalenote">{perf.scales.note}</p>
+      <div class="pf-charts">
+        <img src="/perf/tpch-cross-scale.png" alt="TPC-H run duration across SF0.1 / SF1 / SF10 over time" loading="lazy" />
+        <img src="/perf/distributed-execution.svg" alt="SQE distributed execution: coordinator and workers" loading="lazy" />
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--tight pf-table-sec">
+    <div class="container pf-body">
+      <SectionHeading eyebrow="Receipts" title="The seven suites — what each measures, and how we do" yellow />
+      <table class="pf-table">
+        <thead><tr><th>Suite &amp; purpose</th><th>SQE</th><th>Trino 465</th><th>Speedup</th><th>Pass</th></tr></thead>
+        <tbody>
+          {perf.results.map((r) => (
+            <tr class:list={[r.trails && 'pf-trails']}>
+              <td><span class="pf-suite">{r.suite}</span><span class="pf-purpose">{r.purpose}</span></td>
+              <td>{r.sqe}</td>
+              <td>{r.trino}</td>
+              <td class="pf-speed">{r.speedup}{r.trails && ' · we trail'}</td>
+              <td>{r.pass}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <p class="pf-foot">SSB is the one suite we still trail — lineorder's uniform foreign-key distribution defeats row-group pruning, so the runtime filter only helps at row level. We show it honestly. Full per-query method + the cross-scale charts: <a href={`${DOCS}/`}>docs</a>, or run it yourself via the <a href="/quickstart/benchmark">benchmark quickstart</a>.</p>
+    </div>
+  </section>
+
+  <section class="section pf-leaps-sec">
+    <div class="container pf-body">
+      <SectionHeading eyebrow="The leaps" title="How it got fast — and still is" />
+      <ol class="pf-leaps">
+        {perf.leaps.map((l) => (
+          <li class="pf-leap">
+            <div class="pf-leap__date">{fmtDate(l.date)}</div>
+            <div class="pf-leap__body">
+              <h3>{l.title}</h3>
+              <p>{l.metric}</p>
+              <a class="pf-leap__link" href={`/blog/${l.blog}`}>Read the story →</a>
+            </div>
+          </li>
+        ))}
+      </ol>
+      <AsOf />
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .pf-stats { display:grid; grid-template-columns: repeat(3,1fr); gap:16px; margin-top:30px; }
+  .pf-stat { background: rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.12); border-radius:12px; padding:18px; }
+  .pf-num { display:block; color: var(--turquoise); font-size:2.1rem; font-weight:800; letter-spacing:-0.02em; }
+  .pf-lbl { color: rgba(255,255,255,0.72); font-size:0.84rem; }
+  .pf-body { max-width: 900px; }
+  .pf-copy { color: var(--text-muted); font-size:1.02rem; max-width:72ch; }
+  .pf-scalenote { color: var(--text-muted); font-size:0.88rem; font-family: var(--font-mono); background: var(--soft-blue); border-radius:8px; padding:10px 12px; max-width:72ch; }
+  .pf-charts { display:grid; grid-template-columns: 1fr 1fr; gap:18px; margin-top:24px; }
+  .pf-charts img { width:100%; height:auto; border:1px solid var(--border); border-radius:10px; background:#fff; padding:8px; }
+  .pf-table { width:100%; border-collapse:collapse; margin-top:8px; font-size:0.95rem; }
+  .pf-table th, .pf-table td { border:1px solid var(--border); padding:10px 12px; text-align:left; vertical-align:top; }
+  .pf-table thead th { background: var(--soft-blue); }
+  .pf-suite { display:block; font-weight:700; }
+  .pf-purpose { display:block; color: var(--text-muted); font-size:0.82rem; margin-top:2px; }
+  .pf-speed { font-weight:800; color: var(--sqe-blue); white-space:nowrap; }
+  .pf-trails { color: var(--text-muted); }
+  .pf-trails .pf-speed { color: var(--gray-medium); }
+  .pf-foot { color: var(--text-muted); font-size:0.9rem; margin-top:14px; }
+  .pf-leaps { list-style:none; padding:0; margin:0; }
+  .pf-leap { display:grid; grid-template-columns: 110px 1fr; gap:18px; padding-bottom:22px; border-left:2px solid var(--border); padding-left:18px; margin-left:6px; }
+  .pf-leap__date { font-family: var(--font-mono); font-size:0.82rem; color: var(--sqe-blue); font-weight:700; }
+  .pf-leap__body h3 { margin:0 0 4px; font-size:1.1rem; }
+  .pf-leap__body p { margin:0 0 6px; color: var(--text-muted); }
+  .pf-leap__link { font-weight:700; font-size:0.9rem; }
+  @media (max-width:760px){ .pf-stats{grid-template-columns:1fr} .pf-charts{grid-template-columns:1fr} .pf-leap{grid-template-columns:1fr;gap:4px} }
+</style>

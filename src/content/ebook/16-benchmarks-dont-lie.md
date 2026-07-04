@@ -737,3 +737,60 @@ The naming convention encodes everything you need: `tpch-sf1-flight-2026-04-06T2
 :::
 
 The hard part is knowing which numbers to look at.
+
+
+## Agreement Is Not Validation
+
+Three months after the suites stabilised, a compare run produced the best report we had ever seen. Every query on every suite, run against both SQE and Trino on the same Iceberg tables, every result row diffed. Zero mismatches. The screenshot kind of report.
+
+It was hiding twelve broken queries and a benchmark suite with zero warehouses.
+
+The hole in a differential harness is structural. Two engines read the same files. If the generated data contains no rows a query can select, both return empty, empty equals empty, and the harness prints Match. The diff validates the engines against each other and validates the data against nothing. We had already made the blind spot visible by reporting zero-rows-on-both as `Vacuous` instead of `Match`. At SF0.1, TPC-DS showed 29 of them. The comfortable explanation was scale: small data, selective predicates, some queries legitimately come up empty. The explanation was plausible and untestable from inside the harness.
+
+The way out is a referee that does not share the data path. DuckDB ships the official TPC-DS generator as an extension: `CALL dsdgen(sf=0.1)` produces the spec's own data. So we ran all 99 queries inside DuckDB twice, once against official data, once against ours. No SQE, no Trino. A query that returns rows on official data and none on ours is a generator bug, proven without either engine in the loop.
+
+Sixteen of the 29 vacuous queries failed that test.
+
+The causes were vocabulary. Counties drawn from a random name generator, where the qualification queries probe `Williamson County` by name. Eight invented colors where dsdgen has 92 and a query wants `slate`, `blanched`, `burnished`. Item classes named `Class1` through `Class5` where the real ones are `romance` and `dvd/vcr players`. The deepest was q63: it filters brand AND category AND class together, and in dsdgen output the brand name is a deterministic function of the category and class. Every `Electronics`/`portable` item is some `scholaramalgamalg #N`. Draw brands independently and the conjunction is unsatisfiable. Synthetic data has structure the queries depend on, and the structure goes deeper than any column profile shows.
+
+TPC-C was a one-line bug with total reach. `let num_warehouses = scale as i32` truncates to zero at scale 0.1, and a `.min(num_warehouses)` clamp pinned every warehouse foreign key to a `w_id` of 0. The warehouse table had one row, with id 1. Every join in every query returned the empty set, and both engines agreed it did.
+
+The same pass settled the one genuine engine disagreement of the day, and not the way we expected. TPC-DS q75 returned 57 rows on SQE and 55 on Trino. Our track record says assume SQE is broken. The query keeps rows where a year-over-year sales ratio, computed as `DECIMAL(17,2)` divided by `DECIMAL(17,2)`, is below 0.9. The two extra rows had true ratios of 0.8983 and 0.8984. Trino computes that division at scale 2, both ratios round up to 0.90, and the rows vanish. DataFusion keeps a higher-scale quotient. DuckDB, on the same parquet files, returns SQE's 57 rows exactly. Decimal division scale is implementation-defined, so nobody gets a bug report. But without the third engine we would have spent the afternoon hunting a defect in our own decimal kernel that does not exist.
+
+Three rules came out of that day.
+
+Agreement is not validation. Count your empty results and treat them as debt with a name attached.
+
+The oracle must not share the data path. The reference generator runs in-process in DuckDB and a full validation pass costs minutes.
+
+When two engines disagree, get a third opinion before you debug. The bug you are about to hunt in your own code might be the other engine rounding at scale 2.
+
+:::
+**AI Logbook:** The vacuous investigation was a single AI session: the agent proposed DuckDB's dsdgen as the oracle, wrote the validation harness, diffed the vocabulary distributions, and reverse-engineered the brand-name function by querying the official data for `(category, class, brand)` triples. The human's contribution was one sentence of direction: "validate the vacuous with DuckDB, might be still error in data generation or storage in Iceberg." That sentence contained the key insight the agent then operationalised: the split between generator bugs and storage bugs is exactly the split between DuckDB-on-parquet failing and DuckDB-on-parquet passing while both engines fail.
+:::
+
+The hard part is knowing which numbers to look at. The harder part is knowing when a clean report means nothing happened.
+
+## The Rig Was the Bug
+
+A week after the validation work, we scaled the compare harness to SF10 and got a number that hurt. SSB ran at a fifth of Trino's speed. Every scan-bound TPC-H query lost by 3x or more. The join-heavy queries were fine. Only the scans were slow.
+
+The first profiles told a precise story. TPC-H q06 spent 6.3 seconds of its 6.4-second runtime waiting on the scan. The scan node decoded 8.5 million rows on one core while ten cores sat idle. The reader overlapped its I/O correctly, but every parquet decode ran on the single thread that polled the merged stream. Concurrency is not parallelism. We split large file tasks into 128MB byte ranges, gave each range its own runtime task, and q06 dropped by a third.
+
+Only a third. The profile now showed decode work spread across cores and the query still waiting on the scan. So we measured the thing nobody measures: the storage path itself. A single GET from the host to the dockerized S3 store ran at 96 MB/s. Eight parallel GETs reached 163 MB/s and flatlined. The same file fetched from inside the Docker network moved at twice that. Our coordinator ran on the host. Trino ran inside the VM, next to the storage. Half the benchmark gap was Docker's port-forward, and no engine change could ever have closed it.
+
+We rebuilt the rig so both engines run as containers in the same network, with the same CPU count, bounded heaps, and the same per-query memory. The first level run flipped the table. TPC-H went from 0.57x to winning outright in distributed mode. SSB went from 0.26x to 0.7x and closing.
+
+The level rig immediately earned its keep a second time. TPC-DS q39 failed with a memory error on an 8GB pool that Trino handled in 5GB. The instinct said memory leak. The profile said otherwise: the failing aggregate held 84MB when the pool refused it. FairSpillPool divides its budget across every registered spillable consumer, and q39's two pipelines register about ninety of them. Each consumer got 95MB of an 8GB pool. The aggregate that needed 700MB never had a chance, and the escape valve that should have saved it, emitting partial results early, was welded shut by an optimizer detail: a constant GROUP BY key marks the stream partially sorted, and the partial-order tracker never advances past a constant. Real demand, three gigabytes. Configured pool, eight. Usable by any single operator, ninety-five megabytes.
+
+Three lessons from one day.
+
+Measure the pipe before you profile the engine. We spent the morning reading per-operator metrics in a rig where the engine could never win.
+
+Concurrency is not parallelism. Buffered streams interleave work on one thread and look busy doing it.
+
+Fair sharing has a failure mode. Dividing a pool across registered consumers punishes wide plans for being wide, even when nobody else is using the memory.
+
+:::
+**AI Logbook:** The SF10 day ran as one long session: the agent enabled the profile logging it needed, read the scan times out of the profiles, wrote and tested the parallel decode patch against the vendored reader, then measured raw GET throughput when the patch bought less than expected. The rig asymmetry was its finding, not ours. The q39 root cause came from a second agent dispatched with one suspicion from the human: "must be a cast or logic bug." It was neither a cast nor a leak. It was a constant column and a division.
+:::

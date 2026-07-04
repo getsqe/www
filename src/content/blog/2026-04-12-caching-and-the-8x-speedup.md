@@ -71,7 +71,7 @@ The standout: TPC-H q01 runs in 34ms on SQE versus 2,275ms on Trino. That is 66.
 
 ## The DECIMAL precision fix
 
-While building the caching strategy, we discovered a critical correctness bug. `0.06 - 0.01` was returning `0.ACCOUNT_ID999996` instead of `0.05`. DataFusion's default behavior parses `0.06` as `Float64`, introducing floating-point imprecision.
+While building the caching strategy, we discovered a critical correctness bug. `0.06 - 0.01` was returning `0.049999999999999996` instead of `0.05`. DataFusion's default behavior parses `0.06` as `Float64`, introducing floating-point imprecision.
 
 TPC-H q06 has a `WHERE l_discount BETWEEN 0.05 AND 0.07` predicate. With float parsing, some rows that should match `0.05` exactly get compared as `0.049999...` and excluded. The query returned **40.7 million** instead of the correct **68.2 million**.
 

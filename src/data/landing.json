@@ -1,0 +1,335 @@
+{
+  "heroEyebrow": "Sovereign Query Engine",
+  "heroTitle": "The query engine for the Iceberg lakehouse.",
+  "heroLede": "One binary. Embedded like DuckDB, or a server that scales out like Trino — same SQL, same Iceberg semantics, same per-query identity. Every query runs as the authenticated user, <strong>no service account, no shared root.</strong>",
+  "heroNote": "Build from source: <code>cargo install --path crates/sqe-cli</code>, Apache-2.0, Rust, no JVM.",
+  "features": [
+    {
+      "title": "One binary, two modes",
+      "body": "Embedded single-process engine <em>and</em> distributed coordinator + stateless workers, the same SQL surface, the same binary.",
+      "pillar": "open"
+    },
+    {
+      "title": "Native Iceberg V2 + V3",
+      "body": "Read <em>and</em> write, not read-only. Position &amp; equality deletes, merge-on-read, copy-on-write, schema evolution.",
+      "pillar": "iceberg"
+    },
+    {
+      "title": "Per-query identity",
+      "body": "OIDC password grant; the user's bearer token is passed through to the catalog and S3 on <em>every</em> query.",
+      "pillar": "identity"
+    },
+    {
+      "title": "Policy as plan rewriting",
+      "body": "Row filters and column masks via OPA or Cedar, enforced at the LogicalPlan layer before the optimizer runs.",
+      "pillar": "identity"
+    },
+    {
+      "title": "7 catalog backends",
+      "body": "Polaris, Nessie, Unity Catalog OSS, AWS Glue, S3 Tables, Hive Metastore, JDBC, plus Hadoop storage. Multi-cloud.",
+      "pillar": "iceberg"
+    },
+    {
+      "title": "Two wire protocols",
+      "body": "Arrow Flight SQL and Trino HTTP from the same coordinator. Connect existing Trino clients unchanged.",
+      "pillar": "open"
+    },
+    {
+      "title": "Rust, no JVM",
+      "body": "Sub-second cold start. A C++/DuckDB-class footprint with a distributed story the JVM engines charge for.",
+      "pillar": "open"
+    },
+    {
+      "title": "Column-level lineage",
+      "body": "Native OpenLineage 2-0-2 emitter with column-level lineage on writes. File and HTTP sinks, disk-spool fallback.",
+      "pillar": "identity"
+    }
+  ],
+  "compareHead": [
+    "",
+    "SQE",
+    "Trino",
+    "DuckDB"
+  ],
+  "compareRows": [
+    {
+      "label": "Embedded mode (one binary)",
+      "cells": [
+        {
+          "t": "yes",
+          "tone": "yes"
+        },
+        {
+          "t": "no",
+          "tone": "no"
+        },
+        {
+          "t": "yes",
+          "tone": "yes"
+        }
+      ]
+    },
+    {
+      "label": "Distributed mode",
+      "cells": [
+        {
+          "t": "yes",
+          "tone": "yes"
+        },
+        {
+          "t": "yes",
+          "tone": "yes"
+        },
+        {
+          "t": "no",
+          "tone": "no"
+        }
+      ]
+    },
+    {
+      "label": "Iceberg V2 + V3 read + write",
+      "cells": [
+        {
+          "t": "native",
+          "tone": "emph"
+        },
+        {
+          "t": "V2 + partial V3"
+        },
+        {
+          "t": "read-only"
+        }
+      ]
+    },
+    {
+      "label": "Per-query OIDC passthrough",
+      "cells": [
+        {
+          "t": "yes",
+          "tone": "yes"
+        },
+        {
+          "t": "service acct only"
+        },
+        {
+          "t": "n/a"
+        }
+      ]
+    },
+    {
+      "label": "OPA / Cedar at LogicalPlan",
+      "cells": [
+        {
+          "t": "yes",
+          "tone": "yes"
+        },
+        {
+          "t": "no",
+          "tone": "no"
+        },
+        {
+          "t": "no",
+          "tone": "no"
+        }
+      ]
+    },
+    {
+      "label": "Multi-catalog in one engine",
+      "cells": [
+        {
+          "t": "7 backends",
+          "tone": "emph"
+        },
+        {
+          "t": "one at a time"
+        },
+        {
+          "t": "per-extension"
+        }
+      ]
+    },
+    {
+      "label": "Wire protocols",
+      "cells": [
+        {
+          "t": "Flight SQL + Trino"
+        },
+        {
+          "t": "Trino HTTP"
+        },
+        {
+          "t": "extension"
+        }
+      ]
+    },
+    {
+      "label": "Runtime",
+      "cells": [
+        {
+          "t": "Rust, no JVM",
+          "tone": "emph"
+        },
+        {
+          "t": "JVM"
+        },
+        {
+          "t": "C++"
+        }
+      ]
+    },
+    {
+      "label": "Cold start",
+      "cells": [
+        {
+          "t": "sub-second",
+          "tone": "yes"
+        },
+        {
+          "t": "tens of seconds"
+        },
+        {
+          "t": "sub-second",
+          "tone": "yes"
+        }
+      ]
+    },
+    {
+      "label": "OpenLineage emitter",
+      "cells": [
+        {
+          "t": "native, column-level",
+          "tone": "emph"
+        },
+        {
+          "t": "plugin"
+        },
+        {
+          "t": "no",
+          "tone": "no"
+        }
+      ]
+    }
+  ],
+  "bench": [
+    {
+      "suite": "TPC-H (22)",
+      "sqe": "16.8s",
+      "trino": "26.7s",
+      "speedup": "1.6x",
+      "pass": "22/22",
+      "win": true
+    },
+    {
+      "suite": "SSB (13)",
+      "sqe": "8.3s",
+      "trino": "5.8s",
+      "speedup": "0.70x slower",
+      "pass": "13/13",
+      "win": false
+    },
+    {
+      "suite": "TPC-DS (99)",
+      "sqe": "13.4s",
+      "trino": "45.6s",
+      "speedup": "3.4x",
+      "pass": "93/99",
+      "win": true
+    },
+    {
+      "suite": "TPC-C (8 read)",
+      "sqe": "0.41s",
+      "trino": "2.65s",
+      "speedup": "6.5x",
+      "pass": "8/8",
+      "win": true
+    },
+    {
+      "suite": "TPC-E (11)",
+      "sqe": "9.3s",
+      "trino": "172.0s",
+      "speedup": "18.5x",
+      "pass": "11/11",
+      "win": true
+    },
+    {
+      "suite": "TPC-BB (10)",
+      "sqe": "28.0s",
+      "trino": "255.7s",
+      "speedup": "9.1x",
+      "pass": "10/10",
+      "win": true
+    },
+    {
+      "suite": "ClickBench (43)",
+      "sqe": "1.3s",
+      "trino": "4.46s",
+      "speedup": "3.4x",
+      "pass": "43/43",
+      "win": true
+    }
+  ],
+  "heroModes": [
+    {
+      "key": "embedded",
+      "name": "Embedded",
+      "tagline": "DuckDB-shaped local SQL. One binary, no server, no JVM.",
+      "termTitle": "laptop — embedded",
+      "lines": [
+        {
+          "t": "cmd",
+          "s": "sqe-cli --embedded"
+        },
+        {
+          "t": "out",
+          "s": "SQE 0.15.0 · local warehouse"
+        },
+        {
+          "t": "sql",
+          "s": "sqe> SELECT kind, count(*)"
+        },
+        {
+          "t": "sql",
+          "s": "  ...> FROM orders GROUP BY 1;"
+        },
+        {
+          "t": "out",
+          "s": "| purchase | 128 | · 47ms"
+        }
+      ]
+    },
+    {
+      "key": "server",
+      "name": "Server",
+      "tagline": "Coordinator + stateless workers. Flight SQL and Trino HTTP.",
+      "termTitle": "cluster — trino client",
+      "lines": [
+        {
+          "t": "cmd",
+          "s": "trino --server sqe:8080"
+        },
+        {
+          "t": "out",
+          "s": "authenticated as maria (OIDC)"
+        },
+        {
+          "t": "sql",
+          "s": "trino> SELECT kind, count(*)"
+        },
+        {
+          "t": "sql",
+          "s": "   ...> FROM orders GROUP BY 1;"
+        },
+        {
+          "t": "out",
+          "s": "| purchase | 128 | · same result"
+        }
+      ]
+    }
+  ],
+  "quickstartTeaser": [
+    "embedded-files",
+    "polaris-keycloak-client-id",
+    "aws-s3-tables",
+    "benchmark"
+  ]
+}

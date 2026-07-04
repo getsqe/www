@@ -1,49 +1,53 @@
 ---
-// Dark hero with the terminal demo and CTAs. Landing page only.
+// Dark hero: category claim + dual-mode terminals. Landing page only.
+// Copy + terminal content come from landing.json (synced from the SQE source);
+// falls back to the single embedded terminal if heroModes is absent.
 import Terminal from './Terminal.astro';
+import landing from '../data/landing.json';
 const GITHUB = 'https://github.com/schubergphilis/sqe';
 const DOCS = 'https://docs.getsqe.com';
+const modes = landing.heroModes ?? [];
+const lineClass = (t: string) =>
+  t === 'cmd' ? 't-line' : t === 'comment' ? 't-line t-comment' : t === 'sql' ? 't-line t-sql' : 't-line t-out';
 ---
 <section class="hero">
-  <div class="container hero__inner">
+  <div class="container hero__inner" class:list={[modes.length && 'hero__inner--dual']}>
     <div class="hero__copy">
-      <span class="hero__eyebrow">Sovereign Query Engine</span>
-      <h1 class="hero__title">Iceberg-first SQL<br />that scales.</h1>
-      <p class="hero__lede">
-        Run SQE embedded as one binary on your laptop, or distributed across a cluster of
-        stateless workers behind Arrow Flight SQL or Trino HTTP. Same SQL surface, same Iceberg
-        semantics, same identity model. Every query runs as the authenticated user —
-        <strong>no service account, no shared root.</strong>
-      </p>
+      <span class="hero__eyebrow">{landing.heroEyebrow}</span>
+      <h1 class="hero__title" set:html={landing.heroTitle} />
+      <p class="hero__lede" set:html={landing.heroLede} />
       <div class="hero__cta">
-        <a class="btn btn--primary" href={`${DOCS}`}>Get started</a>
+        <a class="btn btn--primary" href="/quickstart">Get started</a>
         <a class="btn btn--ghost" href={DOCS}>View docs</a>
         <a class="btn btn--ghost" href={GITHUB} rel="noopener">GitHub ↗</a>
       </div>
-      <p class="hero__note">
-        Build from source: <code>cargo install --path crates/sqe-cli</code> — Apache-2.0, Rust, no JVM.
-      </p>
+      <p class="hero__note" set:html={landing.heroNote} />
     </div>
 
-    <div class="hero__demo">
-      <Terminal title="sqe-cli --embedded">
-        <span class="t-line t-comment"># Point SQE at AWS S3 Tables and run it as a SQL server.</span>
-        <span class="t-line"><span class="t-prompt">$</span> <span class="t-cmd">sqe-cli --embedded</span></span>
-        <span class="t-line t-out">SQE 0.15.0 · DataFusion 53.1 · ~/.sqe/warehouse/</span>
-        <span class="t-line"> </span>
-        <span class="t-line t-comment"># Iceberg time travel + per-query identity.</span>
-        <span class="t-line"><span class="t-prompt">sqe&gt;</span> <span class="t-kw">SELECT</span> customer_id, <span class="t-fn">sum</span>(amount)</span>
-        <span class="t-line">  <span class="t-out">...&gt;</span> <span class="t-kw">FROM</span> s3tables.sales.orders</span>
-        <span class="t-line">  <span class="t-out">...&gt;</span> <span class="t-kw">FOR TIMESTAMP AS OF</span> <span class="t-str">'2026-04-01'</span>;</span>
-        <span class="t-line"> </span>
-        <span class="t-line t-out">+-------------+-------------+</span>
-        <span class="t-line t-out">| customer_id | sum(amount) |</span>
-        <span class="t-line t-out">+-------------+-------------+</span>
-        <span class="t-line t-out">| 100482      | 18204.55    |</span>
-        <span class="t-line t-out">+-------------+-------------+</span>
-        <span class="t-line t-out">12 rows · 47ms</span>
-      </Terminal>
-    </div>
+    {modes.length > 0 ? (
+      <div class="hero__demo hero__demo--dual">
+        {modes.map((m) => (
+          <div class="hero__mode">
+            <span class:list={['badge-mode', `badge-mode--${m.key}`]}>{m.name}</span>
+            <Terminal title={m.termTitle}>
+              {m.lines.map((l) => (
+                <span class={lineClass(l.t)}>
+                  {l.t === 'cmd' ? <><span class="t-prompt">$</span> <span class="t-cmd">{l.s}</span></> : l.s}
+                </span>
+              ))}
+            </Terminal>
+          </div>
+        ))}
+        <p class="hero__same">Same query. Same result. Same identity model.</p>
+      </div>
+    ) : (
+      <div class="hero__demo">
+        <Terminal title="sqe-cli --embedded">
+          <span class="t-line"><span class="t-prompt">$</span> <span class="t-cmd">sqe-cli --embedded</span></span>
+          <span class="t-line t-out">SQE · DataFusion · ~/.sqe/warehouse/</span>
+        </Terminal>
+      </div>
+    )}
   </div>
 </section>
 
@@ -51,7 +55,7 @@ const DOCS = 'https://docs.getsqe.com';
   .hero {
     background: var(--space-gray);
     color: #fff;
-    padding-block: clamp(48px, 7vw, 96px);
+    padding-block: clamp(48px, 7vw, 88px);
     background-image:
       radial-gradient(900px 400px at 78% -10%, rgba(30, 232, 237, 0.1), transparent 60%),
       radial-gradient(700px 380px at 10% 110%, rgba(30, 128, 237, 0.16), transparent 60%);
@@ -62,6 +66,7 @@ const DOCS = 'https://docs.getsqe.com';
     gap: 52px;
     align-items: center;
   }
+  .hero__inner--dual { grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); }
   .hero__eyebrow {
     font-family: var(--font-mono);
     color: var(--turquoise);
@@ -71,17 +76,18 @@ const DOCS = 'https://docs.getsqe.com';
   }
   .hero__title {
     margin: 14px 0 20px;
-    font-size: clamp(2.6rem, 5.2vw, 4rem);
+    font-size: clamp(2.4rem, 4.6vw, 3.5rem);
     font-weight: 900;
     letter-spacing: -0.03em;
     color: #fff;
+    text-wrap: balance;
   }
   .hero__lede {
-    font-size: 1.12rem;
+    font-size: 1.1rem;
     color: rgba(255, 255, 255, 0.8);
-    max-width: 46ch;
+    max-width: 50ch;
   }
-  .hero__lede strong { color: #fff; }
+  .hero__lede :global(strong) { color: #fff; }
   .hero__cta {
     display: flex;
     gap: 12px;
@@ -93,7 +99,7 @@ const DOCS = 'https://docs.getsqe.com';
     font-size: 0.86rem;
     color: rgba(255, 255, 255, 0.55);
   }
-  .hero__note code {
+  .hero__note :global(code) {
     font-family: var(--font-mono);
     background: rgba(255, 255, 255, 0.08);
     color: var(--turquoise);
@@ -101,7 +107,27 @@ const DOCS = 'https://docs.getsqe.com';
     border-radius: 5px;
     font-size: 0.92em;
   }
+  .hero__demo--dual {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .hero__mode { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+  .hero__mode :global(.t-sql) { color: #9fd3ff; }
+  .hero__mode :global(.t-line) { font-size: 0.76rem; }
+  .hero__same {
+    margin: 2px 0 0;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    color: var(--turquoise);
+    letter-spacing: 0.04em;
+    text-align: right;
+  }
+  @media (min-width: 1180px) {
+    .hero__demo--dual { grid-template-columns: 1fr 1fr; }
+    .hero__same { grid-column: 1 / -1; }
+  }
   @media (max-width: 900px) {
-    .hero__inner { grid-template-columns: 1fr; gap: 36px; }
+    .hero__inner, .hero__inner--dual { grid-template-columns: 1fr; gap: 36px; }
   }
 </style>

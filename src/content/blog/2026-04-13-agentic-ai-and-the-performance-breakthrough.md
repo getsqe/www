@@ -32,7 +32,7 @@ AI reads results -> AI diagnoses failure -> AI proposes fix ->
 Human reviews -> AI implements -> AI validates -> Commit
 ```
 
-The difference is not just speed, though it is faster. The difference is that the AI holds the entire context: the benchmark results, the source code, the Trino comparison numbers, the error messages, the config files. When TPC-H q06 returned 40.7 million rows instead of 68.2 million, the AI did not just report the failure. It traced the discrepancy to `0.06 - 0.01 = 0.ACCOUNT_ID999996` (floating-point), found the DataFusion config flag `parse_float_as_decimal`, applied the fix, rebuilt, reran the benchmark, and verified the correct result. One conversation turn.
+The difference is not just speed, though it is faster. The difference is that the AI holds the entire context: the benchmark results, the source code, the Trino comparison numbers, the error messages, the config files. When TPC-H q06 returned 40.7 million rows instead of 68.2 million, the AI did not just report the failure. It traced the discrepancy to `0.06 - 0.01 = 0.049999999999999996` (floating-point), found the DataFusion config flag `parse_float_as_decimal`, applied the fix, rebuilt, reran the benchmark, and verified the correct result. One conversation turn.
 
 A human would have done the same investigation. It would have taken half a day. The AI did it in minutes. Not because it is smarter. Because it does not lose context between steps.
 
