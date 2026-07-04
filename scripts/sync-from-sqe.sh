@@ -45,33 +45,21 @@ rm -f "$HERE/src/content/blog"/*.md
 cp "$SQE_DIR/docs/site/blog/"*.md "$HERE/src/content/blog/"
 cp "$SQE_DIR/docs/site/blog/images/"* "$HERE/src/content/blog/images/" 2>/dev/null || echo "  (warn: no blog images)"
 
-# --- 2c. quickstart goals (README lead) + result (OUTPUT) --------------------
-# For each quickstart, extract the README lead (prose between the H1 and the
-# first H2) as the page's "Goals", and copy OUTPUT.md as the "Result". Both are
-# sanitized + gated below alongside the other synced content.
-echo "→ syncing quickstart goals + output"
+# --- 2c. quickstart OVERVIEW (single curated doc per quickstart) -------------
+echo "→ syncing quickstart overviews"
 # The quickstart set is owned by the SQE repo: docs/site/web/quickstarts.json
 # lists every published quickstart (same file drives the /quickstart cards).
 QS_NAMES=()
 while IFS= read -r n; do QS_NAMES+=("$n"); done < <(
   node -e "const q=require('$SQE_DIR/docs/site/web/quickstarts.json'); console.log(q.groups.flatMap(g=>g.items.map(i=>i.name)).join('\n'))"
 )
-mkdir -p "$HERE/src/content/quickstart-goals" "$HERE/src/content/quickstart-output"
-rm -f "$HERE/src/content/quickstart-goals"/*.md "$HERE/src/content/quickstart-output"/*.md
+mkdir -p "$HERE/src/content/quickstart-overview"
+rm -f "$HERE/src/content/quickstart-overview"/*.md
 for n in "${QS_NAMES[@]}"; do
-  rd="$SQE_DIR/quickstart/$n/README.md"
-  od="$SQE_DIR/quickstart/$n/OUTPUT.md"
-  if [[ -f "$rd" ]]; then
-    awk '/^## /{exit} f{print} /^# /{f=1}' "$rd" > "$HERE/src/content/quickstart-goals/$n.md"
-  else
-    echo "  (warn: no README for $n)"
-  fi
-  if [[ -f "$od" ]]; then
-    cp "$od" "$HERE/src/content/quickstart-output/$n.md"
-  else
-    echo "  (warn: no OUTPUT for $n)"
-  fi
+  ov="$SQE_DIR/quickstart/$n/OVERVIEW.md"
+  [[ -f "$ov" ]] && cp "$ov" "$HERE/src/content/quickstart-overview/$n.md" || echo "  (warn: no OVERVIEW for $n)"
 done
+rm -rf "$HERE/src/content/quickstart-goals" "$HERE/src/content/quickstart-output"
 
 # --- 3. matrix filter -------------------------------------------------------
 mkdir -p "$HERE/src/data"
@@ -112,7 +100,7 @@ cp "$SQE_DIR"/docs/site/web/*.md "$HERE/src/content/web/"
 echo "→ sanitizing synced copies"
 SANITIZE_FILES=()
 while IFS= read -r -d '' f; do SANITIZE_FILES+=("$f"); done < <(
-  find "$HERE/src/content/compare" "$HERE/src/content/ebook" "$HERE/src/content/blog" "$HERE/src/content/quickstart-goals" "$HERE/src/content/quickstart-output" -type f -name '*.md' -print0
+  find "$HERE/src/content/compare" "$HERE/src/content/ebook" "$HERE/src/content/blog" "$HERE/src/content/quickstart-overview" -type f -name '*.md' -print0
 )
 sed -i '' \
   -e 's#`crates/\(sqe-[a-z][a-z-]*\)[^`]*`#the \1 crate#g' \
@@ -182,8 +170,7 @@ bash "$HERE/scripts/leak-scan.sh" \
   "$HERE/src/content/compare" \
   "$HERE/src/content/ebook" \
   "$HERE/src/content/blog" \
-  "$HERE/src/content/quickstart-goals" \
-  "$HERE/src/content/quickstart-output" \
+  "$HERE/src/content/quickstart-overview" \
   "$HERE/src/content/web" \
   "$HERE/src/data/iceberg-matrix.json" \
   "$HERE/src/data/performance.json" \
