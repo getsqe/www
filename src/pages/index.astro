@@ -118,7 +118,8 @@ const teaser = (landing.quickstartTeaser ?? [])
       <div class="how-grid">
         <div>
           <h3 class="section-marker">Embedded — one binary, no cluster</h3>
-          <pre class="code"><code>{`cargo install --path crates/sqe-cli
+          <pre class="code"><code>{`git clone https://github.com/schubergphilis/sqe && cd sqe
+cargo install --path crates/sqe-cli
 sqe-cli --embedded          # persistent warehouse at ~/.sqe/warehouse/
 
 sqe> SELECT * FROM '/data/sales.parquet' LIMIT 5;
@@ -128,17 +129,15 @@ sqe> ATTACH 'http://catalog.example.com/api/catalog' AS partner_cat
 sqe> SELECT * FROM partner_cat.sales.orders LIMIT 10;`}</code></pre>
         </div>
         <div>
-          <h3 class="section-marker">Server — Polaris + S3 + SQE locally</h3>
-          <pre class="code"><code>{`docker compose -f docker-compose.test.yml up -d
-./scripts/bootstrap-test.sh
-cargo run --release --bin sqe-coordinator -- tests/sqe-test.toml
+          <h3 class="section-marker">Server — Polaris + Keycloak + SQE locally</h3>
+          <pre class="code"><code>{`git clone https://github.com/schubergphilis/sqe
+cd sqe/quickstart/polaris-keycloak-client-id
+docker compose up -d        # Polaris + Keycloak + MinIO + SQE
 
-# Connect with the CLI over Arrow Flight SQL
-cargo run --bin sqe-cli -- --host localhost --port 50051 \\
-  --username root --protocol flight
+# Connect over Arrow Flight SQL
+docker compose exec sqe sqe-cli --port 50051 --user adminuser
 
-sqe> SHOW CATALOGS;
-sqe> SELECT * FROM test_warehouse.default.my_table LIMIT 10;`}</code></pre>
+sqe> SHOW CATALOGS;`}</code></pre>
         </div>
       </div>
       <p class="how-foot">Full quickstart covering all seven catalog backends → <a href={DOCS}>docs.getsqe.com</a></p>
