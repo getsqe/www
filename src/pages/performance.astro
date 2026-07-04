@@ -38,20 +38,22 @@ const fmtDate = (iso: string) =>
   <section class="section section--tight pf-table-sec">
     <div class="container pf-body">
       <SectionHeading eyebrow="Receipts" title="The seven suites — what each measures, and how we do" yellow />
-      <table class="pf-table">
-        <thead><tr><th>Suite &amp; purpose</th><th>SQE</th><th>Trino 465</th><th>Speedup</th><th>Pass</th></tr></thead>
-        <tbody>
-          {perf.results.map((r) => (
-            <tr class:list={[r.trails && 'pf-trails']}>
-              <td><span class="pf-suite">{r.suite}</span><span class="pf-purpose">{r.purpose}</span></td>
-              <td>{r.sqe}</td>
-              <td>{r.trino}</td>
-              <td class="pf-speed">{r.speedup}{r.trails && ' · we trail'}</td>
-              <td>{r.pass}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <div class="tbl-wrap">
+        <table class="pf-table">
+          <thead><tr><th>Suite &amp; purpose</th><th>SQE</th><th>Trino 465</th><th>Speedup</th><th>Pass</th></tr></thead>
+          <tbody>
+            {perf.results.map((r) => (
+              <tr class:list={[r.trails && 'pf-trails']}>
+                <td><span class="pf-suite">{r.suite}</span><span class="pf-purpose">{r.purpose}</span></td>
+                <td>{r.sqe}</td>
+                <td>{r.trino}</td>
+                <td class="pf-speed">{r.speedup}{r.trails && ' · we trail'}</td>
+                <td>{r.pass}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
       <p class="pf-foot">SSB is the one suite we still trail — lineorder's uniform foreign-key distribution defeats row-group pruning, so the runtime filter only helps at row level. We show it honestly. Full per-query method + the cross-scale charts: <a href={`${DOCS}/`}>docs</a>, or run it yourself via the <a href="/quickstart/benchmark">benchmark quickstart</a>.</p>
     </div>
   </section>

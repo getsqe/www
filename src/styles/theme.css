@@ -35,6 +35,20 @@
 
 * { box-sizing: border-box; }
 
+/* ---- skip link (hidden until keyboard-focused) ---- */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 100;
+  background: var(--sqe-blue);
+  color: #fff;
+  font-weight: 700;
+  padding: 10px 16px;
+  border-radius: 0 0 8px 0;
+}
+.skip-link:focus { left: 0; }
+
 html {
   scroll-behavior: smooth;
   -webkit-text-size-adjust: 100%;
@@ -217,6 +231,11 @@ table.tbl td.num, table.tbl th.num {
   margin: 1.2em 0;
   padding: 0.2em 0 0.2em 18px;
   color: var(--text-muted);
+}
+/* Wide reference matrices (compare pages) scroll instead of overflowing the
+   viewport on small screens; desktop keeps the full-width table layout. */
+@media (max-width: 720px) {
+  .prose table { display: block; overflow-x: auto; }
 }
 
 @media (prefers-reduced-motion: reduce) {

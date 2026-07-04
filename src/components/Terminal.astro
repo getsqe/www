@@ -6,7 +6,7 @@ interface Props {
 }
 const { title = 'sqe-cli — embedded' } = Astro.props;
 ---
-<div class="term" role="img" aria-label="SQE CLI session example">
+<div class="term" role="img" aria-label={`Terminal session: ${title}`}>
   <div class="term__bar">
     <span class="term__dot term__dot--r"></span>
     <span class="term__dot term__dot--y"></span>
