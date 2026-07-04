@@ -43,7 +43,7 @@ const REPO_QS = 'https://github.com/schubergphilis/sqe/tree/main/quickstart';
           </div>
           <div class="qs-grid">
             {g.items.map((it) => (
-              <article class="qs-card">
+              <article class:list={['qs-card', g.key === 'Embedded' && 'qs-card--embedded']}>
                 <div class="qs-card__top">
                   <h3 class="qs-card__title">
                     <a class="qs-card__link" href={`/quickstart/${it.name}`}>{it.title}</a>
@@ -87,6 +87,10 @@ const REPO_QS = 'https://github.com/schubergphilis/sqe/tree/main/quickstart';
     transition: box-shadow 0.15s ease, transform 0.15s ease, border-color 0.15s ease;
   }
   .qs-card:hover { box-shadow: 0 12px 32px -18px rgba(2, 12, 23, 0.4); transform: translateY(-1px); border-color: var(--sqe-blue); }
+  /* Embedded-mode cards carry the turquoise edge their group chip announces. */
+  .qs-card--embedded { border-top-color: var(--turquoise); }
+  .qs-card--embedded:hover { border-color: var(--turquoise); }
+  .qs-card--embedded:hover .qs-card__title, .qs-card--embedded .qs-card__link:hover { color: #0d7f83; }
   .qs-card__top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
   .qs-card__title { font-size: 1.02rem; margin: 0; }
   /* Whole card is a link to the walk-through: the title link stretches to cover

@@ -241,9 +241,11 @@ sqe> SELECT * FROM test_warehouse.default.my_table LIMIT 10;`}</code></pre>
 </BaseLayout>
 
 <style>
-  .mode-strip { padding-block: 26px 0; }
+  /* The strip's cards float over the hero's bottom edge, stitching the dark
+     claim to the light page. */
+  .mode-strip { margin-top: -28px; padding-block: 0; }
   .mode-strip__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
-  .mode-card { display: flex; flex-direction: column; gap: 8px; }
+  .mode-card { display: flex; flex-direction: column; gap: 8px; box-shadow: 0 18px 44px -26px rgba(2, 12, 23, 0.55); }
   .mode-card:hover { text-decoration: none; }
   .mode-card__tag { margin: 0; color: var(--text); font-weight: 600; font-size: 1rem; }
   .mode-card__go { font-weight: 700; font-size: 0.88rem; color: var(--sqe-blue); }
@@ -258,12 +260,16 @@ sqe> SELECT * FROM test_warehouse.default.my_table LIMIT 10;`}</code></pre>
   .why-link { font-weight: 700; font-size: 0.9rem; margin-top: 10px; }
 
   .what { background: #fff; border-block: 1px solid var(--border); }
-  .pillars { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; }
+  .pillars { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0 32px; }
+  .pillar + .pillar { border-left: 1px solid var(--border); padding-left: 32px; }
   .pillar__head { font-size: 1.08rem; margin-bottom: 16px; }
   .pillar__item { margin-bottom: 16px; }
   .pillar__item h4 { font-size: 0.95rem; margin: 0 0 4px; }
   .pillar__item p { font-size: 0.88rem; color: var(--text-muted); margin: 0; }
-  @media (max-width: 880px) { .pillars { grid-template-columns: 1fr; gap: 20px; } }
+  @media (max-width: 880px) {
+    .pillars { grid-template-columns: 1fr; gap: 20px; }
+    .pillar + .pillar { border-left: 0; padding-left: 0; border-top: 1px solid var(--border); padding-top: 20px; }
+  }
 
   .qs-teaser-sec { background: #fff; border-top: 1px solid var(--border); }
   .qs-teaser { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }

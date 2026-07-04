@@ -123,6 +123,49 @@ const lineClass = (t: string) =>
     letter-spacing: 0.04em;
     text-align: right;
   }
+
+  /* ---- load choreography (CSS-only; the theme's reduced-motion blanket
+     collapses every animation here to its end state) ---- */
+  @keyframes sqe-rise {
+    from { opacity: 0; transform: translateY(14px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes sqe-fade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes sqe-caret {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
+  .hero__copy > * { animation: sqe-rise 0.55s cubic-bezier(0.2, 0.7, 0.3, 1) both; }
+  .hero__copy > *:nth-child(2) { animation-delay: 0.07s; }
+  .hero__copy > *:nth-child(3) { animation-delay: 0.14s; }
+  .hero__copy > *:nth-child(4) { animation-delay: 0.21s; }
+  .hero__copy > *:nth-child(5) { animation-delay: 0.28s; }
+
+  /* The two terminals rise in turn, then replay their session line by line. */
+  .hero__mode { --td: 0.7s; animation: sqe-rise 0.6s cubic-bezier(0.2, 0.7, 0.3, 1) both 0.25s; }
+  .hero__mode:nth-of-type(2) { --td: 0.95s; animation-delay: 0.4s; }
+  .hero__mode :global(.term__body .t-line) { opacity: 0; animation: sqe-fade 0.3s ease forwards; }
+  .hero__mode :global(.term__body .t-line:nth-child(1)) { animation-delay: var(--td); }
+  .hero__mode :global(.term__body .t-line:nth-child(2)) { animation-delay: calc(var(--td) + 0.45s); }
+  .hero__mode :global(.term__body .t-line:nth-child(3)) { animation-delay: calc(var(--td) + 0.8s); }
+  .hero__mode :global(.term__body .t-line:nth-child(4)) { animation-delay: calc(var(--td) + 1s); }
+  .hero__mode :global(.term__body .t-line:nth-child(5)) { animation-delay: calc(var(--td) + 1.45s); }
+  .hero__mode :global(.term__body .t-line:last-child)::after {
+    content: '▊';
+    margin-left: 6px;
+    color: var(--turquoise);
+    animation: sqe-caret 1.1s steps(1) infinite;
+  }
+  .hero__same { animation: sqe-fade 0.5s ease both 2.7s; }
+
+  .hero__mode :global(.term) { transition: border-color 0.2s ease, transform 0.2s ease; }
+  .hero__mode:hover :global(.term) {
+    border-color: rgba(30, 232, 237, 0.42);
+    transform: translateY(-2px);
+  }
   @media (min-width: 1180px) {
     .hero__demo--dual { grid-template-columns: 1fr 1fr; }
     .hero__same { grid-column: 1 / -1; }
