@@ -1,0 +1,143 @@
+---
+// Interactive flagship benchmark chart: SQE run duration over time, per suite,
+// one line per scale factor. Data is baked at build from the synced
+// perf-series.json (aggregated from $SQE/benchmarks/results). No CDN — echarts
+// is tree-shaken (echarts/core) and lazily imported when the chart scrolls in.
+import series from '../data/perf-series.json';
+
+const SUITE_LABELS: Record<string, string> = {
+  tpch: 'TPC-H', tpcds: 'TPC-DS', ssb: 'SSB', clickbench: 'ClickBench',
+  tpce: 'TPC-E', tpcbb: 'TPC-BB', tpcc: 'TPC-C', bank: 'Bank',
+};
+const suites = Object.keys(SUITE_LABELS).filter((k) => (series as any).suites?.[k]);
+const dflt = suites.includes('tpch') ? 'tpch' : suites[0];
+---
+<div class="perfchart">
+  <div class="perfchart__bar">
+    <label class="perfchart__lbl" for="perfchart-suite">Suite</label>
+    <select class="perfchart__sel" id="perfchart-suite">
+      {suites.map((s) => <option value={s} selected={s === dflt}>{SUITE_LABELS[s]}</option>)}
+    </select>
+    <span class="perfchart__hint">log scale · drag to zoom · toggle scales in the legend</span>
+  </div>
+  <div class="perfchart__host" id="perfchart-host" role="img"
+       aria-label="SQE benchmark run duration over time, by scale factor"></div>
+  <script type="application/json" id="perfchart-data" set:html={JSON.stringify(series)}></script>
+</div>
+
+<script>
+  const el = document.getElementById('perfchart-host') as HTMLElement | null;
+  const sel = document.getElementById('perfchart-suite') as HTMLSelectElement | null;
+  const raw = document.getElementById('perfchart-data');
+  if (el && sel && raw) {
+    const data = JSON.parse(raw.textContent || '{}');
+    const SCALES = [
+      { key: '10',   name: 'SF10',   color: '#1e80ed' },
+      { key: '1',    name: 'SF1',    color: '#1ee8ed' },
+      { key: '0.1',  name: 'SF0.1',  color: '#ffdb4e' },
+      { key: '0.01', name: 'SF0.01', color: '#8aa0c8' },
+    ];
+    let chart: any = null;
+
+    function optionFor(suite: string) {
+      const s = (data.suites && data.suites[suite]) || {};
+      const seriesDef = SCALES
+        .filter((sc) => Array.isArray(s[sc.key]) && s[sc.key].length)
+        .map((sc) => ({
+          name: sc.name,
+          type: 'line',
+          showSymbol: true,
+          symbolSize: 6,
+          lineStyle: { width: 2.5, color: sc.color },
+          itemStyle: { color: sc.color },
+          emphasis: { focus: 'series' },
+          data: s[sc.key].map((p: any) => [p.date, p.totalSec, p.pass, p.total]),
+        }));
+      return {
+        backgroundColor: 'transparent',
+        color: SCALES.map((sc) => sc.color),
+        grid: { left: 56, right: 18, top: 44, bottom: 68 },
+        legend: { top: 10, textStyle: { color: '#c7d3e8' }, inactiveColor: '#455778' },
+        tooltip: {
+          trigger: 'axis',
+          backgroundColor: '#0b1830',
+          borderColor: '#26406b',
+          textStyle: { color: '#e6edf9' },
+          formatter: (ps: any[]) => {
+            const d = ps[0].axisValueLabel || ps[0].axisValue;
+            let out = `<b>${d}</b>`;
+            for (const p of ps) {
+              const sec = p.data[1], pass = p.data[2], total = p.data[3];
+              out += `<br/>${p.marker}${p.seriesName}: <b>${sec}s</b>` +
+                (pass != null ? ` · ${pass}/${total}` : '');
+            }
+            return out;
+          },
+        },
+        xAxis: {
+          type: 'time',
+          axisLine: { lineStyle: { color: '#31456e' } },
+          axisLabel: { color: '#8aa0c8' },
+          splitLine: { show: false },
+        },
+        yAxis: {
+          type: 'log',
+          name: 'seconds',
+          nameTextStyle: { color: '#8aa0c8', align: 'left' },
+          axisLabel: { color: '#8aa0c8', formatter: '{value}s' },
+          splitLine: { lineStyle: { color: '#1b2c4d' } },
+        },
+        dataZoom: [
+          { type: 'inside' },
+          {
+            type: 'slider', height: 18, bottom: 24,
+            borderColor: '#26406b', fillerColor: 'rgba(30,128,237,0.18)',
+            handleStyle: { color: '#1e80ed' }, textStyle: { color: '#8aa0c8' },
+            dataBackground: { lineStyle: { color: '#31456e' }, areaStyle: { color: '#16294a' } },
+          },
+        ],
+        series: seriesDef,
+      };
+    }
+
+    let echartsMod: any = null;
+    async function boot() {
+      const core = await import('echarts/core');
+      const { LineChart } = await import('echarts/charts');
+      const { GridComponent, TooltipComponent, LegendComponent, DataZoomComponent } =
+        await import('echarts/components');
+      const { CanvasRenderer } = await import('echarts/renderers');
+      core.use([LineChart, GridComponent, TooltipComponent, LegendComponent, DataZoomComponent, CanvasRenderer]);
+      echartsMod = core;
+      chart = core.init(el, null, { renderer: 'canvas' });
+      chart.setOption(optionFor(sel.value));
+      sel.addEventListener('change', () => chart.setOption(optionFor(sel.value), true));
+      window.addEventListener('resize', () => chart && chart.resize());
+    }
+
+    const io = new IntersectionObserver((entries) => {
+      if (entries.some((e) => e.isIntersecting)) { io.disconnect(); boot(); }
+    }, { rootMargin: '200px' });
+    io.observe(el);
+  }
+</script>
+
+<style>
+  .perfchart {
+    background: #0a1526;
+    border: 1px solid #1f3357;
+    border-radius: 12px;
+    padding: 14px 14px 8px;
+  }
+  .perfchart__bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 4px; }
+  .perfchart__lbl { color: #8aa0c8; font-size: 0.8rem; font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.04em; }
+  .perfchart__sel {
+    background: #0f2140; color: #e6edf9;
+    border: 1px solid #2b4471; border-radius: 7px; padding: 5px 10px;
+    font-size: 0.9rem; font-weight: 600; cursor: pointer;
+  }
+  .perfchart__sel:focus { outline: 2px solid var(--sqe-blue); outline-offset: 1px; }
+  .perfchart__hint { color: #5f719a; font-size: 0.76rem; margin-left: auto; }
+  .perfchart__host { width: 100%; height: 380px; }
+  @media (max-width: 760px) { .perfchart__host { height: 300px; } .perfchart__hint { display: none; } }
+</style>
