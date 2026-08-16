@@ -126,6 +126,12 @@ Each section lists Trino functions with their SQE status:
 | `slice(array, start, length)` | `slice(array, start, length)` | ✅ | Trino compat UDF; 1-based, negative `start` counts from the end, `length` clamps to the array end |
 | `element_at(array, n)` | `element_at(array, n)` | ✅ | Trino compat UDF; 1-based, negative from the end, out-of-bounds returns NULL. Also handles `element_at(map, key)` returning the scalar value |
 | `contains(array, x)` | `contains(array, x)` | ✅ | Trino compat UDF; three-valued (NULL when `x` is absent but the array holds a NULL). The string `contains(haystack, needle)` form is preserved |
+| `filter(array, x -> pred)` | `filter(array, x -> pred)` | ✅ | Higher-order; aliases DataFusion 54's `array_filter`. Lambda syntax comes from the DuckDB parse dialect. 1-based binding, NULL/empty-array parity with Trino |
+| `transform(array, x -> expr)` | `transform(array, x -> expr)` | ✅ | Higher-order; aliases DataFusion 54's `array_transform`. Lambda syntax from the DuckDB parse dialect |
+| `any_match(array, x -> pred)` | `any_match(array, x -> pred)` | ✅ | Higher-order; DataFusion alias of `array_any_match` |
+| `all_match(array, x -> pred)` | `all_match(array, x -> pred)` | ✅ | Higher-order SQE UDF (the sqe-trino-functions crate); Trino NULL/empty semantics |
+| `none_match(array, x -> pred)` | `none_match(array, x -> pred)` | ✅ | Higher-order SQE UDF; Trino NULL/empty semantics |
+| `reduce(array, init, (s,x) -> combine, s -> finish)` | Same | ✅ | Higher-order SQE UDF; sequential left fold, NULL array yields NULL |
 
 ## Scalar Functions: Date/Time
 
@@ -317,6 +323,8 @@ Each section lists Trino functions with their SQE status:
 | `ALTER TABLE ... SET/DROP NOT NULL` | Same | ✅ | |
 | `ALTER TABLE ... SET PROPERTIES` | `ALTER TABLE ... SET TBLPROPERTIES` | ✅ | Iceberg TableUpdate::SetProperties |
 | `CREATE VIEW` | Same | ✅ | Iceberg views |
+| `CREATE VIEW ... COMMENT '<text>'` | Same | ✅ | Stored as the view's `comment` property |
+| `CREATE VIEW ... SECURITY DEFINER \| INVOKER` | Accepted, recorded | ⚠️ | SQE always evaluates views as INVOKER (no service account to run as the definer). Recorded in `sqe.view-security`; stricter than DEFINER, so it fails closed |
 | `DROP VIEW` | Same | ✅ | |
 | `CREATE OR REPLACE VIEW` | Same | ✅ | Drop + recreate (non-atomic) |
 | `CREATE MATERIALIZED VIEW` | — | ❌ | Not in Iceberg spec; use CTAS + scheduled refresh |

@@ -64,7 +64,8 @@ state.
 | `SELECT * REPLACE (expr AS col)` | works (DataFusion 54 native) | **done** (documented in V9) |
 | `FROM tbl SELECT ...` (FROM-first) | missing | not planned (DataFusion parser does not support) |
 | Struct / list / map literals (`{a: 1}`, `[1, 2]`, `MAP`) | partial (nested types work, syntax less ergonomic) | not planned |
-| List comprehensions, lambdas | missing | not planned (DataFusion does not support) |
+| Lambdas (`filter`, `transform`, `any_match`, `all_match`, `none_match`, `reduce`) | have | **done**: SQE parses with the DuckDB dialect, so `x -> expr` works. `filter` / `transform` alias DataFusion 54's `array_filter` / `array_transform`; `all_match` / `none_match` / `reduce` are SQE UDFs. All six array higher-order functions covered |
+| List comprehensions | missing | not planned (DataFusion does not support) |
 | `PIVOT` / `UNPIVOT` | missing | not planned (DataFusion does not support) |
 | `QUALIFY` | have (DataFusion SQL planner handles it) | done (row was stale; verified working, test `sql_compat 06_qualify`) |
 | `ASOF JOIN` | missing | not planned (DataFusion has open issue, not landed) |
@@ -135,7 +136,7 @@ Items 7, 10, 11.
 - AWS provider chain: when `[storage]` has no `s3_access_key`, falls back to
   env vars, `~/.aws/credentials`, IMDS, IRSA.
 - JSON UDF surface verified against DuckDB; documented at
-  [docs/features/json.md](https://github.com/schubergphilis/sqe/blob/main/docs/site/compare/features/json.md).
+  [docs/features/json.md](https://github.com/schubergphilis/sqe/blob/main/docs/site/compare/../book/src/sql-reference/json.md).
 
 ### V11: Delta Lake reader (disabled pending delta-rs DF 54)
 
@@ -192,7 +193,7 @@ as the prerequisite. Next: a custom `HfObjectStore` that implements
 standard DataFusion glob-expansion path. The V12 SQL pre-rewriter retires
 when V12.2 lands.
 
-See [`hf-glob-research.md`](https://github.com/schubergphilis/sqe/blob/main/docs/site/compare/./hf-glob-research.md) for the design.
+See [`hf-glob-research.md`](https://github.com/schubergphilis/sqe/blob/main/docs/site/compare/../book/src/design-notes/hf-glob-research.md) for the design.
 
 V11 shipped the `read_delta()` TVF rather than a catalog backend, letting
 CLI users query a Delta root directly:
@@ -241,7 +242,7 @@ block is upstream parser work or a positioning decision.
 | `PIVOT` / `UNPIVOT` | DataFusion planner rejects the parsed AST node (`Unsupported ast node Pivot`) |
 | `ASOF JOIN` | DataFusion has an open issue; not landed (parser wants `MATCH_CONDITION`) |
 | `FROM`-first syntax | DataFusion parser does not support |
-| List comprehensions, lambdas | DataFusion does not support |
+| List comprehensions | no DataFusion primitive (all six array lambdas do work) |
 | `postgres` / `mysql` / `sqlite` TVFs | positioning: SQE is Iceberg-first |
 | `spatial`, `vss`, `fts`, `excel` | niche; deferred until concrete demand |
 
@@ -305,17 +306,17 @@ fast as DuckDB on basic file load."
 
 The full V8-V12 narrative lives in
 [the blog post](/blog/2026-05-07-accidentally-duckdb) and ebook chapter
-[16d "The DuckDB Drift"](https://github.com/schubergphilis/sqe/blob/main/docs/site/compare/ebook/chapters/16d-the-duckdb-drift.md).
+[16d "The DuckDB Drift"](https://github.com/schubergphilis/sqe/blob/main/docs/site/compare/../ebook/chapters/16d-the-duckdb-drift.md).
 
 ## Related docs
 
 - [Embedded CLI reference](https://docs.getsqe.com/getting-started/cli.html): all flags, dot-commands, TVFs,
   catalog backends, storage backends, write paths in one place
-- [Architecture](https://github.com/schubergphilis/sqe/blob/main/docs/site/compare/architecture.md): overall SQE design
-- [Catalogs](https://github.com/schubergphilis/sqe/blob/main/docs/site/compare/book/src/getting-started/catalogs.md): multi-catalog config
+- [Architecture](https://github.com/schubergphilis/sqe/blob/main/docs/site/compare/../book/src/architecture/overview.md): overall SQE design
+- [Catalogs](https://github.com/schubergphilis/sqe/blob/main/docs/site/compare/../book/src/getting-started/catalogs.md): multi-catalog config
   reference
-- [CLI](https://github.com/schubergphilis/sqe/blob/main/docs/site/compare/book/src/getting-started/cli.md): cluster-mode CLI usage
+- [CLI](https://github.com/schubergphilis/sqe/blob/main/docs/site/compare/../book/src/getting-started/cli.md): cluster-mode CLI usage
 - [Trino compatibility](/compare/trino): separate compatibility track
-- [Roadmap](https://github.com/schubergphilis/sqe/blob/main/docs/site/compare/roadmap.md): phase-by-phase plan
-- [HF glob research](https://github.com/schubergphilis/sqe/blob/main/docs/site/compare/hf-glob-research.md): V12.2 design
+- [Roadmap](https://github.com/schubergphilis/sqe/blob/main/docs/site/compare/../book/src/development/roadmap.md): phase-by-phase plan
+- [HF glob research](https://github.com/schubergphilis/sqe/blob/main/docs/site/compare/../book/src/design-notes/hf-glob-research.md): V12.2 design
 - [The DuckDB drift (blog)](/blog/2026-05-07-accidentally-duckdb): the V8-V12 narrative

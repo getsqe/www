@@ -14,8 +14,13 @@ const GITHUB = 'https://github.com/schubergphilis/sqe';
 // Authored copy synced from docs/site/web/landing.json (single content home).
 const { features, compareHead, compareRows, bench } = landing;
 
-// Performance teaser stats; keep the section rendering if a future sync drops the field.
-const perfHeadline = perf.headline ?? { suitesWon: '6/7', vsTrino: 'Trino', queriesPass: '222/222' };
+// Performance teaser stats; keep the section rendering if a future sync reshapes the field.
+const perfStats = perf.headline?.stats ?? [];
+const perfTeaser = [
+  { num: perfStats[0]?.num ?? '7 / 8', label: 'suites faster at SF1' },
+  { num: perfStats[1]?.num ?? '6 / 7', label: 'and at SF10 too' },
+  { num: perfStats[2]?.num ?? '8.9×', label: 'top speedup' },
+];
 
 // Quickstart teaser cards: names picked in landing.json, metadata from quickstarts.json.
 import { groups as qsGroups, allQuickstarts } from '../data/quickstarts';
@@ -60,9 +65,9 @@ const teaser = (landing.quickstartTeaser ?? [])
           <a href="/compare/iceberg" class="why-link">See the matrix →</a>
         </div>
         <div class="card why-card">
-          <div class="why-stat"><span class="stat-num">6/7</span></div>
-          <h3>Benchmark suites won vs Trino 465</h3>
-          <p>222 of 222 queries pass at SF1. Up to 18.5× faster on TPC-E. Reproducible with one script.</p>
+          <div class="why-stat"><span class="stat-num">7/8</span></div>
+          <h3>Benchmark suites faster than Trino 481 at SF1</h3>
+          <p>Every query differentially validated. Up to 8.9× faster (TPC-BB) — and now ahead at SF10 too, with the SSB crossover closed. Reproducible with one script.</p>
           <a href="#proof" class="why-link">See the receipts →</a>
         </div>
         <div class="card why-card">
@@ -150,7 +155,7 @@ sqe> SHOW CATALOGS;`}</code></pre>
       <SectionHeading eyebrow="SQE vs Trino vs DuckDB" title="One engine instead of two." />
       <CompareTable head={compareHead} rows={compareRows} />
 
-      <h3 class="proof-sub section-marker">Performance — SF1, vs Trino 465</h3>
+      <h3 class="proof-sub section-marker">Performance — SF1, vs Trino 481</h3>
       <div class="tbl-wrap">
         <table class="tbl">
           <thead>
@@ -170,8 +175,9 @@ sqe> SHOW CATALOGS;`}</code></pre>
         </table>
       </div>
       <p class="proof-foot">
-        SQE wins six of seven suites. 222/222 queries pass. SSB is the one suite SQE trails —
-        lineorder’s uniform FK distribution defeats row-group pruning. Run your own with
+        SQE is faster than Trino on seven of eight suites at SF1 — and now ahead at SF10 too, with
+        the SSB crossover closed. Zero row differences across every run; the exceptions (TPC-C's
+        sub-second reads, the new bank suite at SF10) are shown, not hidden. Run your own with
         <code>BENCH_SCALE=1 ./scripts/benchmark-test.sh --compare-trino</code>.
       </p>
 
@@ -186,11 +192,11 @@ sqe> SHOW CATALOGS;`}</code></pre>
   <!-- PERFORMANCE TEASER -->
   <section class="section pf-teaser-sec" id="performance">
     <div class="container">
-      <SectionHeading eyebrow="Performance" title="Six of seven suites, faster than Trino." center />
+      <SectionHeading eyebrow="Performance" title="Faster than Trino — now at SF10 too." center />
       <div class="pf-teaser">
-        <div class="pf-teaser__stat"><b>{perfHeadline.suitesWon}</b><span>suites vs {perfHeadline.vsTrino}</span></div>
-        <div class="pf-teaser__stat"><b>{perfHeadline.queriesPass}</b><span>queries pass, validated</span></div>
-        <div class="pf-teaser__stat"><b>18.5×</b><span>top speedup</span></div>
+        {perfTeaser.map((s) => (
+          <div class="pf-teaser__stat"><b>{s.num}</b><span>{s.label}</span></div>
+        ))}
       </div>
       <p class="pf-teaser__cta"><a href="/performance">See the performance leaps →</a></p>
     </div>

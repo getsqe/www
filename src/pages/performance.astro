@@ -3,60 +3,83 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import PageHero from '../components/PageHero.astro';
 import SectionHeading from '../components/SectionHeading.astro';
 import AsOf from '../components/AsOf.astro';
+import PerfChart from '../components/PerfChart.astro';
 import perf from '../data/performance.json';
 
 const DOCS = 'https://docs.getsqe.com';
-// Guard: keep the page rendering if a future sync drops the headline block.
-const headline = perf.headline ?? { suitesWon: '6/7', vsTrino: 'Trino 465', queriesPass: '222/222', validated: '' };
+// Guard: keep the page rendering if a future sync reshapes the headline block.
+const headline = perf.headline ?? {};
+const stats = headline.stats ?? [];
+const vsTrino = headline.vsTrino ?? 'Trino';
 const fmtDate = (iso: string) =>
   new Date(iso + 'T00:00:00Z').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 ---
 <BaseLayout
-  title="Performance — SQE vs Trino 465 | getsqe.com"
-  description="SQE wins six of seven benchmark suites against Trino 465 at SF1, with 222/222 queries differentially validated. Decisive on smaller scales, closing fast at SF10+."
+  title="Performance — SQE vs Trino 481 | getsqe.com"
+  description="SQE is faster than Trino 481 across seven of eight benchmark suites at SF1 — and now at SF10 too, with the SSB crossover closed. Every query differentially validated."
   darkHeader
 >
-  <PageHero eyebrow="Performance" title="Six of seven suites. Faster than Trino." lede={headline.validated}>
+  <PageHero eyebrow="Performance" title="Faster than Trino — now at SF10 too." lede={headline.validated}>
     <div class="pf-stats">
-      <div class="pf-stat"><span class="pf-num">{headline.suitesWon}</span><span class="pf-lbl">suites won vs {headline.vsTrino}</span></div>
-      <div class="pf-stat"><span class="pf-num">{headline.queriesPass}</span><span class="pf-lbl">queries pass, differentially validated</span></div>
-      <div class="pf-stat"><span class="pf-num">18.5×</span><span class="pf-lbl">top suite speedup (TPC-E)</span></div>
+      {stats.map((s) => (
+        <div class="pf-stat"><span class="pf-num">{s.num}</span><span class="pf-lbl">{s.label}</span></div>
+      ))}
     </div>
   </PageHero>
 
   <section class="section">
     <div class="container pf-body">
-      <SectionHeading eyebrow="Where we stand" title="Decisive up to SF1, closing fast at SF10+" />
+      <SectionHeading eyebrow="Where we stand" title="Faster at SF1 — and now ahead at SF10" />
       <p class="pf-copy">{perf.scales.dominant}</p>
       <p class="pf-copy">{perf.scales.progress}</p>
       <p class="pf-scalenote">{perf.scales.note}</p>
       <div class="pf-charts">
-        <img src="/perf/tpch-cross-scale.png" alt="TPC-H run duration across SF0.1 / SF1 / SF10 over time" loading="lazy" />
+        <div class="pf-chart-main">
+          <PerfChart />
+          <p class="pf-chartcap">SQE run duration over time — pick a suite, zoom in. Updated on each sync from the raw benchmark results.</p>
+        </div>
         <img src="/perf/distributed-execution.svg" alt="SQE distributed execution: coordinator and workers" loading="lazy" />
       </div>
     </div>
   </section>
 
   <section class="section section--tight pf-table-sec">
-    <div class="container pf-body">
-      <SectionHeading eyebrow="Receipts" title="The seven suites — what each measures, and how we do" yellow />
+    <div class="container pf-body pf-body--wide">
+      <SectionHeading eyebrow="Receipts" title="The eight suites — what each measures, and how we do" yellow />
       <div class="tbl-wrap">
         <table class="pf-table">
-          <thead><tr><th>Suite &amp; purpose</th><th>SQE</th><th>Trino 465</th><th>Speedup</th><th>Pass</th></tr></thead>
+          <thead>
+            <tr>
+              <th rowspan="2">Suite &amp; purpose</th>
+              <th colspan="4" class="pf-grp">SF1</th>
+              <th colspan="4" class="pf-grp pf-grp--r">SF10</th>
+            </tr>
+            <tr>
+              <th>SQE</th><th>{vsTrino}</th><th>Speedup</th><th>Pass</th>
+              <th class="pf-grp--r">SQE</th><th>{vsTrino}</th><th>Speedup</th><th>Pass</th>
+            </tr>
+          </thead>
           <tbody>
             {perf.results.map((r) => (
-              <tr class:list={[r.trails && 'pf-trails']}>
-                <td><span class="pf-suite">{r.suite}</span><span class="pf-purpose">{r.purpose}</span></td>
-                <td>{r.sqe}</td>
-                <td>{r.trino}</td>
-                <td class="pf-speed">{r.speedup}{r.trails && ' · we trail'}</td>
-                <td>{r.pass}</td>
+              <tr>
+                <td class="pf-suitecell">
+                  <span class="pf-suite">{r.suite}</span>
+                  <span class="pf-purpose">{r.purpose}</span>
+                </td>
+                <td>{r.sf1.sqe}</td>
+                <td>{r.sf1.trino}</td>
+                <td class:list={['pf-speed', r.sf1.trails && 'pf-speed--trail']}>{r.sf1.speedup}</td>
+                <td>{r.sf1.pass}{r.sf1.note && <span class="pf-note">{r.sf1.note}</span>}</td>
+                <td class="pf-grp--r">{r.sf10.sqe}</td>
+                <td>{r.sf10.trino}</td>
+                <td class:list={['pf-speed', r.sf10.trails && 'pf-speed--trail']}>{r.sf10.speedup}</td>
+                <td>{r.sf10.pass}{r.sf10.note && <span class="pf-note">{r.sf10.note}</span>}</td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
-      <p class="pf-foot">SSB is the one suite we still trail — lineorder's uniform foreign-key distribution defeats row-group pruning, so the runtime filter only helps at row level. We show it honestly. Full per-query method + the cross-scale charts: <a href={`${DOCS}/`}>docs</a>, or run it yourself via the <a href="/quickstart/benchmark">benchmark quickstart</a>.</p>
+      <p class="pf-foot">Zero row differences between SQE and Trino across every run — each non-match is a case where both engines agree (0 rows). Two exceptions we show rather than hide: TPC-C's sub-second OLTP reads at SF1 (0.77×, fixed dispatch overhead dominates when a query finishes in milliseconds) and the new bank suite at SF10 (0.23×, spill stalls under an 8 GB pool — being fixed). Full per-query method: <a href={`${DOCS}/`}>docs</a>, or run it yourself via the <a href="/quickstart/benchmark">benchmark quickstart</a>.</p>
     </div>
   </section>
 
@@ -86,19 +109,25 @@ const fmtDate = (iso: string) =>
   .pf-num { display:block; color: var(--turquoise); font-size:2.1rem; font-weight:800; letter-spacing:-0.02em; }
   .pf-lbl { color: rgba(255,255,255,0.72); font-size:0.84rem; }
   .pf-body { max-width: 900px; }
+  .pf-body--wide { max-width: 1080px; }
   .pf-copy { color: var(--text-muted); font-size:1.02rem; max-width:72ch; }
   .pf-scalenote { color: var(--text-muted); font-size:0.88rem; font-family: var(--font-mono); background: var(--soft-blue); border-radius:8px; padding:10px 12px; max-width:72ch; }
-  .pf-charts { display:grid; grid-template-columns: 1fr 1fr; gap:18px; margin-top:24px; }
+  .pf-charts { display:grid; grid-template-columns: 1.6fr 1fr; gap:18px; margin-top:24px; align-items:start; }
   .pf-charts img { width:100%; height:auto; border:1px solid var(--border); border-radius:10px; background:#fff; padding:8px; }
-  .pf-table { width:100%; border-collapse:collapse; margin-top:8px; font-size:0.95rem; }
-  .pf-table th, .pf-table td { border:1px solid var(--border); padding:10px 12px; text-align:left; vertical-align:top; }
-  .pf-table thead th { background: var(--soft-blue); }
+  .pf-chartcap { color: var(--text-muted); font-size:0.82rem; margin:8px 2px 0; }
+  .pf-table { width:100%; border-collapse:collapse; margin-top:8px; font-size:0.92rem; }
+  .pf-table th, .pf-table td { border:1px solid var(--border); padding:9px 11px; text-align:left; vertical-align:top; }
+  .pf-table thead th { background: var(--soft-blue); text-align:center; }
+  .pf-table thead th:first-child { text-align:left; }
+  .pf-grp { border-bottom:2px solid var(--sqe-blue); }
+  .pf-grp--r { border-left:2px solid var(--border); }
   .pf-table tbody tr:nth-child(even) { background: rgba(232,242,253,0.4); }
+  .pf-suitecell { min-width: 220px; }
   .pf-suite { display:block; font-weight:700; }
-  .pf-purpose { display:block; color: var(--text-muted); font-size:0.82rem; margin-top:2px; }
+  .pf-purpose { display:block; color: var(--text-muted); font-size:0.8rem; margin-top:2px; }
   .pf-speed { font-weight:800; color: var(--sqe-blue); white-space:nowrap; }
-  .pf-trails { color: var(--text-muted); }
-  .pf-trails .pf-speed { color: var(--gray-medium); }
+  .pf-speed--trail { color: var(--gray-medium); }
+  .pf-note { display:block; color: var(--text-muted); font-size:0.72rem; font-style:italic; margin-top:3px; max-width:16ch; }
   .pf-foot { color: var(--text-muted); font-size:0.9rem; margin-top:14px; }
   .pf-leaps { list-style:none; padding:0; margin:0; }
   .pf-leap { display:grid; grid-template-columns: 110px 1fr; gap:18px; padding-bottom:22px; border-left:2px solid var(--border); padding-left:18px; margin-left:6px; }
