@@ -92,38 +92,41 @@ RUN --mount=type=cache,id=sqe-cargo-registry-${TARGETARCH},target=/usr/local/car
 Stage 4 copies the actual source and builds only the workspace crates against the pre-built dependencies. On a warm cache, this takes 30 to 90 seconds depending on how many crates changed.
 
 ```dockerfile
-# ── Stage 5: Runtime image ───────────────────────────────────
-FROM debian:bookworm-slim
-
+# ── Builder ──────────────────────────────────────────────────
+FROM rust:1.97.1-bookworm AS builder
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    ca-certificates libssl3 curl && \
-    rm -rf /var/lib/apt/lists/* && \
-    groupadd -r sqe && useradd -r -g sqe -u 1000 sqe
+    cmake protobuf-compiler libprotobuf-dev pkg-config clang lld \
+    && rm -rf /var/lib/apt/lists/*
+WORKDIR /build
+COPY Cargo.toml Cargo.lock ./
+COPY crates/ crates/
+COPY vendor/ vendor/
+COPY xtask/ xtask/
+RUN cargo build --release --locked --no-default-features \
+      --bin sqe-server --bin sqe-worker --bin sqe-cli
 
+# ── Runtime ──────────────────────────────────────────────────
+# glibc + libgcc + CA certs. No shell, no apt, no OpenSSL.
+FROM cgr.dev/chainguard/glibc-dynamic
+USER 65532
 COPY --from=builder /build/target/release/sqe-server /usr/local/bin/
 COPY --from=builder /build/target/release/sqe-worker /usr/local/bin/
 COPY --from=builder /build/target/release/sqe-cli /usr/local/bin/
-
-USER sqe
-EXPOSE 50051 50052 8080 9090 9091
-
-HEALTHCHECK --interval=10s --timeout=3s --start-period=10s --retries=3 \
-    CMD curl -f http://localhost:9091/healthz || exit 1
-
-ENTRYPOINT ["sqe-server"]
+COPY --from=busybox:1.37.0-uclibc /bin/wget /usr/local/bin/wget
+ENTRYPOINT ["/usr/local/bin/sqe-server"]
 ```
 
-Stage 5 is the runtime. The `debian:bookworm-slim` base carries only what the binaries need: CA certificates for TLS to Polaris, libssl for HTTPS, and curl for the health check. The three binaries total about 40MB. The final image is 47MB.
+The Dockerfile is two stages and one cargo invocation. No chef recipe, no sccache, no BuildKit cache mounts. Local compose, the data-platform quickstart, and aikido/kaniko all use the same file. The builder pin matches `rust-toolchain.toml`.
 
-From 2.3GB to 47MB. A 98% reduction. Cold pulls on a Kubernetes node take 3 seconds instead of 45.
+The runtime is Chainguard glibc-dynamic: glibc, libgcc, and CA certificates. That is the full list of OS dependencies SQE needs. The binaries link `libc` / `libm` / `libgcc`, and TLS is rustls end to end (no `libssl`). A static busybox `wget` exists only for image and compose healthchecks. Kubernetes probes `/healthz` over HTTP and never calls it.
 
-We use `debian:bookworm-slim` instead of `scratch` for the runtime. The original plan was a fully static musl build running on scratch: zero runtime dependencies, zero attack surface. In practice, the Rust TLS ecosystem still has rough edges with musl static linking. OpenSSL bindings, which iceberg-rust pulls in transitively, resist static compilation on some architectures. The bookworm-slim base adds 25MB but eliminates a class of linking headaches that were consuming more debugging time than the size savings justified.
+We used to ship `debian:bookworm-slim` with hundreds of OS CVEs, then distroless, which still failed the Aikido image gate on unfixed debian libc criticals. Chainguard is clean under `grype --fail-on high`. Dropping chef/sccache cut the Dockerfile to something every consumer can read in one screen.
 
 :::
-**Antipattern: scratch images for Rust services that use OpenSSL.** It sounds clean: no base OS, just your binary. But if any dependency in your tree links dynamically against libssl, the binary will fail with a cryptic "not found" error at startup. Either commit to rustls throughout your entire dependency tree, or accept the slim base. We chose the latter and moved on.
+**Antipattern: a full userland in a Rust service image "just in case".** A shell and curl feel convenient for `docker exec` debugging. They also import perl, tar, util-linux, and every CVE those packages carry. If the binary only needs glibc and CA certs, put it on a minimal base that scanners actually clear. Keep a separate debug image if operators need a shell. Do not pay the CVE bill on every production node for a tool you use once a quarter.
 :::
 
-The non-root user matters. SQE runs as UID 1000 in the `sqe` group. This is not security theater. Kubernetes `PodSecurityStandard` policies (and the older PodSecurityPolicy) can enforce non-root containers. Running as root means your deployment will be rejected by any cluster with basic security hygiene enabled.
+The non-root user matters. Chainguard nonroot is UID/GID 65532, and the Helm chart sets `runAsUser` / `runAsGroup` / `fsGroup` to match. This is not security theater. Kubernetes `PodSecurityStandard` policies can enforce non-root containers. Running as root means your deployment will be rejected by any cluster with basic security hygiene enabled.
 
 
 ## Helm Chart: Two Topologies, One Chart
