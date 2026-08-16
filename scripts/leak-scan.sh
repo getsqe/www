@@ -17,7 +17,10 @@ set -euo pipefail
 
 # Text extensions that reach the published output. Keep in sync across the
 # three site gates; a gap here is silent.
-SCAN_EXTS=(md mdx json html svg js mjs xml txt yml yaml css)
+# `sh` matters: the sync scripts live in this PUBLIC repo, and one of them
+# carried the maintainer's absolute checkout path for months without any gate
+# ever reading it — no gate scanned shell scripts.
+SCAN_EXTS=(md mdx json html svg js mjs xml txt yml yaml css sh)
 
 # jacobadmin/jacobbuilder matched specifically (NOT bare "jacob") so the author
 # byline "Jacob Verhoeks" in blog/ebook content is not a false hit.

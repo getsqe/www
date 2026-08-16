@@ -13,7 +13,10 @@
 #      Any hit aborts the sync (exit 1) — nothing is published until sanitized.
 set -euo pipefail
 
-SQE_DIR="${SQE_DIR:-/Users/jjverhoeks/git/schuberg/vpf-data-ai/chameleon/Applications/sqlengine}"
+# No default: this repo is PUBLIC, and the real checkout path discloses the
+# maintainer's home directory and the internal group/project layout. A missing
+# SQE_DIR fails loudly instead. The parent repo's scripts/sync-all.sh exports it.
+SQE_DIR="${SQE_DIR:?set SQE_DIR to your local sqe checkout}"
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 if [[ ! -d "$SQE_DIR" ]]; then
