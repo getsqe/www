@@ -7,6 +7,7 @@ import CompareTable from '../components/CompareTable.astro';
 import matrix from '../data/iceberg-matrix.json';
 import perf from '../data/performance.json';
 import landing from '../data/landing.json';
+import roadmapData from '../data/roadmap.json';
 
 const DOCS = 'https://docs.getsqe.com';
 const GITHUB = 'https://github.com/schubergphilis/sqe';
@@ -21,6 +22,10 @@ const perfTeaser = [
   { num: perfStats[1]?.num ?? '6 / 7', label: 'and at SF10 too' },
   { num: perfStats[2]?.num ?? '8.9×', label: 'top speedup' },
 ];
+
+// "Recently shipped" strip: the newest milestones from the synced roadmap.json,
+// so it can't go stale against the roadmap page.
+const shipped = roadmapData.milestones.slice(0, 3);
 
 // Quickstart teaser cards: names picked in landing.json, metadata from quickstarts.json.
 import { groups as qsGroups, allQuickstarts } from '../data/quickstarts';
@@ -59,8 +64,8 @@ const teaser = (landing.quickstartTeaser ?? [])
       <div class="why-grid">
         <div class="card why-card">
           <div class="why-stat"><span class="stat-num">{matrix.score.percent}%</span></div>
-          <h3>Top-five on the public Iceberg matrix</h3>
-          <p>{matrix.score.raw}/{matrix.score.max} cells. The only non-Spark engine in the top five —
+          <h3>Scored on the public Iceberg matrix</h3>
+          <p>{matrix.score.raw}/{matrix.score.max} cells across V2 and V3 —
             scored against the public <a href="https://icebergmatrix.org" rel="noopener">rubric</a>, not a vendor spec sheet.</p>
           <a href="/compare/iceberg" class="why-link">See the matrix →</a>
         </div>
@@ -239,9 +244,9 @@ sqe> SHOW CATALOGS;`}</code></pre>
         <h2 class="shipped__h">Recently shipped</h2>
       </div>
       <ul class="shipped__list">
-        <li><span class="shipped__date">Jun 2026</span> Read-only ops web UI, in the binary</li>
-        <li><span class="shipped__date">May 2026</span> DuckDB-class embedded mode — file TVFs, <code>hf://</code>, Delta reader</li>
-        <li><span class="shipped__date">May 2026</span> Column-level OpenLineage emitter</li>
+        {shipped.map((m) => (
+          <li><span class="shipped__date">{m.date}</span> {m.title}</li>
+        ))}
       </ul>
       <a class="btn btn--ghost shipped__cta" href="/roadmap">See the roadmap →</a>
     </div>

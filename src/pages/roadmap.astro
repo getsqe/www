@@ -20,9 +20,8 @@ const state = roadmapData.state.map((s) => ({ num: fill(s.num), label: fill(s.la
 // no account ids, regions, branch names, MR numbers, or internal paths.
 const milestones = roadmapData.milestones.map((m) => ({ ...m, body: fill(m.body) }));
 
-// Open roadmap — verified against the current state: items already shipped
-// (OPA/Cedar policy, Azure/GCS stores, map-producing UDAFs) are intentionally
-// NOT listed here, since they're done.
+// Open roadmap — verified against the current state at the source: items
+// already shipped are intentionally NOT listed here, since they're done.
 const roadmap = roadmapData.roadmap;
 const roadmapGroups = [
   { key: 'In progress', tone: 'progress', items: roadmap.progress },
@@ -32,7 +31,7 @@ const roadmapGroups = [
 ---
 <BaseLayout
   title="Roadmap — SQE current state & what’s next | getsqe.com"
-  description="Where SQE is and where it’s going: 88.4% on the Iceberg matrix, 6/7 benchmark suites won, a read-only ops web UI — plus the verified open roadmap of what’s in progress, planned, and blocked upstream."
+  description={`Where SQE is and where it’s going: ${matrix.score.percent}% on the Iceberg matrix, the milestones that got it here, and the verified open roadmap of what’s in progress, planned, and blocked upstream.`}
   darkHeader
 >
   <PageHero

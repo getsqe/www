@@ -14,7 +14,7 @@ const { aheadHead, aheadRows, inspired, gaps } = compare;
 ---
 <BaseLayout
   title="SQE vs DuckDB — embedded engine comparison | getsqe.com"
-  description="SQE matches DuckDB on the embedded side — file-format TVFs, hf:// URLs, a Delta reader, httpfs-equivalent access — then scales the same binary to a multi-tenant, policy-enforced cluster."
+  description="SQE matches DuckDB on the embedded side — file-format TVFs, hf:// URLs, httpfs-equivalent access — then scales the same binary to a multi-tenant, policy-enforced cluster."
   darkHeader
 >
   <PageHero
@@ -58,9 +58,6 @@ const { aheadHead, aheadRows, inspired, gaps } = compare;
         <span class="t-line"> </span>
         <span class="t-line t-comment"># A HuggingFace dataset, straight from the hf:// URL</span>
         <span class="t-line"><span class="t-prompt">sqe&gt;</span> <span class="t-kw">SELECT</span> * <span class="t-kw">FROM</span> <span class="t-str">'hf://datasets/squad/plain_text/train.parquet'</span> <span class="t-kw">LIMIT</span> 5;</span>
-        <span class="t-line"> </span>
-        <span class="t-line t-comment"># Delta Lake with time travel</span>
-        <span class="t-line"><span class="t-prompt">sqe&gt;</span> <span class="t-kw">SELECT</span> * <span class="t-kw">FROM</span> <span class="t-fn">read_delta</span>(<span class="t-str">'/data/delta/sales'</span>, version =&gt; <span class="t-str">'5'</span>);</span>
         <span class="t-line"> </span>
         <span class="t-line t-comment"># Export results back out</span>
         <span class="t-line"><span class="t-prompt">sqe&gt;</span> <span class="t-kw">COPY</span> (<span class="t-kw">SELECT</span> * <span class="t-kw">FROM</span> orders <span class="t-kw">WHERE</span> region=<span class="t-str">'EU'</span>) <span class="t-kw">TO</span> <span class="t-str">'eu.parquet'</span>;</span>
