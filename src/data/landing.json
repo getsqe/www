@@ -21,7 +21,7 @@
     },
     {
       "title": "Policy as plan rewriting",
-      "body": "Row filters and column masks via OPA or Cedar, enforced at the LogicalPlan layer before the optimizer runs.",
+      "body": "Row filters and column masks from Apache Ranger policies, shared with Spark and Kyuubi, enforced at the LogicalPlan layer before the optimizer runs.",
       "pillar": "identity"
     },
     {
@@ -30,8 +30,8 @@
       "pillar": "iceberg"
     },
     {
-      "title": "Two wire protocols",
-      "body": "Arrow Flight SQL and Trino HTTP from the same coordinator. Connect existing Trino clients unchanged.",
+      "title": "Three wire protocols",
+      "body": "Arrow Flight SQL, Trino HTTP and MCP from the same coordinator. Trino clients connect unchanged; AI clients connect as the token's user, with no service account.",
       "pillar": "open"
     },
     {
@@ -117,7 +117,7 @@
       ]
     },
     {
-      "label": "OPA / Cedar at LogicalPlan",
+      "label": "Ranger policy at LogicalPlan",
       "cells": [
         {
           "t": "yes",
@@ -152,7 +152,7 @@
       "label": "Wire protocols",
       "cells": [
         {
-          "t": "Flight SQL + Trino"
+          "t": "Flight SQL + Trino + MCP"
         },
         {
           "t": "Trino HTTP"
@@ -289,7 +289,7 @@
         },
         {
           "t": "out",
-          "s": "SQE 0.15.0 · local warehouse"
+          "s": "SQE 0.51.0 · local warehouse"
         },
         {
           "t": "sql",

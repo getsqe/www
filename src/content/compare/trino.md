@@ -191,7 +191,7 @@ Each section lists Trino functions with their SQE status:
 | `json_array_length(json)` | `json_array_length(json)` | ✅ | Trino compat UDF |
 | `is_json_scalar(json)` | `is_json_scalar(json)` | ✅ | Trino compat UDF |
 | `CAST(v AS JSON)` | `CAST(v AS JSON)` | ✅ | sqe-sql AST rewriter intercepts `CAST(... AS JSON)` and rewrites to `to_json(...)` before DataFusion's planner sees it (DataFusion does not recognize `JSON` as a target type for CAST). Skipped when the SQL does not contain `as json` |
-| `CAST(json AS type)` | `CAST(json_col AS type)` | ✅ | JSON aliases to `Utf8`; CAST rides DataFusion's built-in coercion. For typed extraction from JSONPath, use `json_get_int(j, '$')`, `json_get_str(j, '$')`, etc. |
+| `CAST(json AS type)` | `CAST(json_col AS type)` | ✅ | JSON reads back as JSON text (`VARIANT` on V3, `Utf8` on V2); CAST rides DataFusion's built-in coercion. For typed extraction from JSONPath, use `json_get_int(j, '$')`, `json_get_str(j, '$')`, etc. |
 
 **Note:** Core JSON extraction is now supported via `datafusion-functions-json` (registered at startup) plus Trino-aliased UDFs (`json_extract`, `json_extract_scalar`, `json_array_length`, `json_parse`). Full JSONPath syntax and JSON-typed columns remain unsupported — most Iceberg workloads use structured columns rather than JSON blobs.
 
@@ -382,7 +382,7 @@ Each section lists Trino functions with their SQE status:
 | `ARRAY(T)` | `List(T)` | ✅ | |
 | `MAP(K, V)` | `Map(K, V)` | ✅ | |
 | `ROW(fields...)` | `Struct(fields...)` | ✅ | Single-level and nested/parameterized ROW casts. `CAST(row(...) AS row(a int, b row(x int)))` is rewritten pre-parse to nested `named_struct(...)` (`rewrite_nested_row_cast`), which plans and serializes over the wire as a ROW. Full nested struct-value wire parity vs Trino's `[1,[10]]` array shape is per the rewrite's design, not stack-verified here |
-| `JSON` | `Utf8` | ✅ | `CREATE TABLE t(payload JSON)` aliases to `Utf8`. `CAST(json_col AS BIGINT|VARCHAR|DOUBLE)` rides DataFusion's built-in Utf8→target coercion. Full JSON extraction via `json_extract`, `json_extract_scalar`, `json_array_length`, `json_parse`, `json_get_str/int/float/bool` |
+| `JSON` | `Variant` (V3) / `Utf8` (V2) | ✅ | `CREATE TABLE t(payload JSON)` stores Iceberg `VARIANT` on a V3 table (the default) and `Utf8` on a V2 table; both read back as JSON text. `CAST(json_col AS BIGINT|VARCHAR|DOUBLE)` rides DataFusion's built-in Utf8→target coercion. Full JSON extraction via `json_extract`, `json_extract_scalar`, `json_array_length`, `json_parse`, `json_get_str/int/float/bool` |
 | `UUID` | `Utf8` | ✅ | `CREATE TABLE t(id UUID)` aliases UUID to Utf8 in `sql_type_to_arrow`. Equality, regex, and `CAST(... AS UUID)` work via the string form. No native UUID logical type (Arrow has none); UUIDv4 generation needs a UDF if required |
 | `IPADDRESS` | `VARCHAR` | ⚠️ | Stored as VARCHAR, no IP-specific functions (subnet containment, etc.) |
 | `HyperLogLog` | — | ❌ | Trino-specific sketch type |
@@ -413,7 +413,7 @@ Each section lists Trino functions with their SQE status:
 | ORC file format | — | ✅ | ❌ | Parquet only |
 | Copy-on-Write (CoW) | ✅ | ✅ | ✅ | DELETE/UPDATE/MERGE |
 | Merge-on-Read (MoR) reads | ✅ | ✅ | ✅ | Position deletes, equality deletes, and V3 deletion vectors all readable (RW fork has full read support) |
-| Merge-on-Read (MoR) writes | ✅ via `write.delete.mode='merge-on-read'` | ✅ | ✅ | `handle_delete_dispatch` routes by table property: position deletes when no PK declared, equality deletes with PK. Position deletes commit via `FastAppendAction`; equality deletes via `RowDeltaAction`. CoW remains the default |
+| Merge-on-Read (MoR) writes | ✅ via `write.delete.mode='merge-on-read'` | ✅ | ✅ | `handle_delete_dispatch` routes by table property: position deletes (V2) or one deletion vector per data file (V3) when no PK declared, equality deletes with PK. Position deletes commit via `FastAppendAction`; equality deletes and deletion vectors via `RowDeltaAction`. CoW remains the default |
 
 ## Operational Comparison
 

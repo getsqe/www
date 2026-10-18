@@ -181,6 +181,7 @@ bash "$HERE/scripts/leak-scan.sh" \
   "$HERE/src/data/landing.json" \
   "$HERE/src/data/roadmap.json" \
   "$HERE/src/data/compare-duckdb.json" \
+  "$HERE/src/data/iceberg.json" \
   "$HERE/src/data/quickstarts.json"
 
 echo "✓ sync OK"

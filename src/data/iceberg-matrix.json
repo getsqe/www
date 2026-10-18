@@ -1,8 +1,8 @@
 {
   "score": {
-    "raw": 167,
-    "max": 189,
-    "percent": 88.4
+    "raw": 147,
+    "max": 162,
+    "percent": 90.7
   },
   "docUrl": "https://github.com/schubergphilis/sqe",
   "cells": [
@@ -55,12 +55,6 @@
       "level": "full"
     },
     {
-      "key": "sqe:cdc-support:v3",
-      "feature": "Cdc support",
-      "version": "V3",
-      "level": "full"
-    },
-    {
       "key": "sqe:column-default-values:v3",
       "feature": "Column default values",
       "version": "V3",
@@ -75,6 +69,12 @@
     {
       "key": "sqe:copy-on-write:v3",
       "feature": "Copy on write",
+      "version": "V3",
+      "level": "full"
+    },
+    {
+      "key": "sqe:deletion-vectors:v3",
+      "feature": "Deletion vectors",
       "version": "V3",
       "level": "full"
     },
@@ -97,14 +97,14 @@
       "level": "none"
     },
     {
-      "key": "sqe:hadoop-catalog:v2",
-      "feature": "Hadoop catalog",
+      "key": "sqe:google-lakehouse:v2",
+      "feature": "Google lakehouse",
       "version": "V2",
       "level": "partial"
     },
     {
-      "key": "sqe:hadoop-catalog:v3",
-      "feature": "Hadoop catalog",
+      "key": "sqe:google-lakehouse:v3",
+      "feature": "Google lakehouse",
       "version": "V3",
       "level": "partial"
     },
@@ -121,34 +121,10 @@
       "level": "full"
     },
     {
-      "key": "sqe:hive-metastore:v2",
-      "feature": "Hive metastore",
-      "version": "V2",
-      "level": "full"
-    },
-    {
-      "key": "sqe:hive-metastore:v3",
-      "feature": "Hive metastore",
-      "version": "V3",
-      "level": "full"
-    },
-    {
-      "key": "sqe:jdbc-catalog:v2",
-      "feature": "Jdbc catalog",
-      "version": "V2",
-      "level": "full"
-    },
-    {
-      "key": "sqe:jdbc-catalog:v3",
-      "feature": "Jdbc catalog",
-      "version": "V3",
-      "level": "full"
-    },
-    {
       "key": "sqe:lineage:v3",
       "feature": "Lineage",
       "version": "V3",
-      "level": "none"
+      "level": "full"
     },
     {
       "key": "sqe:merge-on-read:v2",
@@ -175,18 +151,6 @@
       "level": "full"
     },
     {
-      "key": "sqe:nessie:v2",
-      "feature": "Nessie",
-      "version": "V2",
-      "level": "full"
-    },
-    {
-      "key": "sqe:nessie:v3",
-      "feature": "Nessie",
-      "version": "V3",
-      "level": "full"
-    },
-    {
       "key": "sqe:partition-evolution:v2",
       "feature": "Partition evolution",
       "version": "V2",
@@ -199,27 +163,9 @@
       "level": "full"
     },
     {
-      "key": "sqe:polaris:v2",
-      "feature": "Polaris",
-      "version": "V2",
-      "level": "full"
-    },
-    {
-      "key": "sqe:polaris:v3",
-      "feature": "Polaris",
-      "version": "V3",
-      "level": "full"
-    },
-    {
       "key": "sqe:position-deletes:v2",
       "feature": "Position deletes",
       "version": "V2",
-      "level": "full"
-    },
-    {
-      "key": "sqe:position-deletes:v3",
-      "feature": "Position deletes",
-      "version": "V3",
       "level": "full"
     },
     {
@@ -262,7 +208,7 @@
       "key": "sqe:shredded-variant:v3",
       "feature": "Shredded variant",
       "version": "V3",
-      "level": "none"
+      "level": "partial"
     },
     {
       "key": "sqe:snowflake-horizon-catalog:v2",
@@ -340,25 +286,25 @@
       "key": "sqe:unity-catalog:v2",
       "feature": "Unity catalog",
       "version": "V2",
-      "level": "full"
+      "level": "partial"
     },
     {
       "key": "sqe:unity-catalog:v3",
       "feature": "Unity catalog",
       "version": "V3",
-      "level": "full"
+      "level": "partial"
+    },
+    {
+      "key": "sqe:unknown-type:v3",
+      "feature": "Unknown type",
+      "version": "V3",
+      "level": "partial"
     },
     {
       "key": "sqe:variant-type:v3",
       "feature": "Variant type",
       "version": "V3",
-      "level": "none"
-    },
-    {
-      "key": "sqe:vector-type:v3",
-      "feature": "Vector type",
-      "version": "V3",
-      "level": "none"
+      "level": "partial"
     },
     {
       "key": "sqe:write-insert:v2",

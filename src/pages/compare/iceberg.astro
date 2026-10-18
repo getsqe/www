@@ -3,10 +3,14 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageHero from '../../components/PageHero.astro';
 import MatrixGrid from '../../components/MatrixGrid.astro';
 import matrix from '../../data/iceberg-matrix.json';
+import iceberg from '../../data/iceberg.json';
+
+// Catalogs the current rubric no longer scores; authored in docs/site/web/iceberg.json.
+const outside = iceberg.outsideRubric ?? [];
 ---
 <BaseLayout
   title="Iceberg matrix — SQE coverage | getsqe.com"
-  description={`SQE scores ${matrix.score.raw}/${matrix.score.max} (${matrix.score.percent}%) on the public Iceberg matrix — top-five overall, the only non-Spark engine in the top five.`}
+  description={`SQE scores ${matrix.score.raw}/${matrix.score.max} (${matrix.score.percent}%) on the public Iceberg matrix on the current rubric.`}
   darkHeader
 >
   <PageHero
@@ -17,6 +21,29 @@ import matrix from '../../data/iceberg-matrix.json';
   <section class="section">
     <div class="container">
       <MatrixGrid data={matrix} />
+      {outside.length > 0 && (
+        <div class="outside">
+          <h2>Catalogs outside the current rubric</h2>
+          <p>{iceberg.outsideRubricNote}</p>
+          <table class="outside__table">
+            <thead><tr><th>Catalog</th><th>Support</th><th>Testing today</th></tr></thead>
+            <tbody>
+              {outside.map((c) => (
+                <tr><td>{c.catalog}</td><td>{c.support}</td><td>{c.testing}</td></tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   </section>
 </BaseLayout>
+
+<style>
+  .outside { margin-top: 48px; }
+  .outside h2 { font-size: 1.25rem; margin: 0 0 8px; }
+  .outside p { color: var(--text-muted); margin: 0 0 16px; max-width: 70ch; }
+  .outside__table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
+  .outside__table th, .outside__table td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--gray-light, #e5e7eb); vertical-align: top; }
+  .outside__table th { font-weight: 700; }
+</style>
