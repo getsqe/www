@@ -18,10 +18,11 @@ const { features, compareHead, compareRows, bench } = landing;
 // Performance teaser stats; keep the section rendering if a future sync reshapes the field.
 const perfStats = perf.headline?.stats ?? [];
 const perfTeaser = [
-  { num: perfStats[0]?.num ?? '7 / 8', label: 'suites faster at SF1' },
-  { num: perfStats[1]?.num ?? '6 / 7', label: 'and at SF10 too' },
-  { num: perfStats[2]?.num ?? '8.9×', label: 'top speedup' },
+  { num: perfStats[0]?.num ?? '—', label: 'suites faster at SF1' },
+  { num: perfStats[1]?.num ?? '—', label: 'suites faster at SF10' },
+  { num: perfStats[2]?.num ?? '—', label: 'top speedup' },
 ];
+const perfDominant = perf.scales?.dominant ?? '';
 
 // "Recently shipped" strip: the newest milestones from the synced roadmap.json,
 // so it can't go stale against the roadmap page.
@@ -70,9 +71,9 @@ const teaser = (landing.quickstartTeaser ?? [])
           <a href="/compare/iceberg" class="why-link">See the matrix →</a>
         </div>
         <div class="card why-card">
-          <div class="why-stat"><span class="stat-num">7/8</span></div>
+          <div class="why-stat"><span class="stat-num">{perfTeaser[0].num.replace(/\s/g, '')}</span></div>
           <h3>Benchmark suites faster than Trino 481 at SF1</h3>
-          <p>Every query differentially validated. Up to 8.9× faster (TPC-BB) — and now ahead at SF10 too, with the SSB crossover closed. Reproducible with one script.</p>
+          <p>Every query differentially validated. Up to {perfTeaser[2].num} faster at SF1, and ahead at SF10 too. Reproducible with one script.</p>
           <a href="#proof" class="why-link">See the receipts →</a>
         </div>
         <div class="card why-card">
@@ -180,9 +181,8 @@ sqe> SHOW CATALOGS;`}</code></pre>
         </table>
       </div>
       <p class="proof-foot">
-        SQE is faster than Trino on seven of eight suites at SF1 — and now ahead at SF10 too, with
-        the SSB crossover closed. Zero row differences across every run; the exceptions (TPC-C's
-        sub-second reads, the new bank suite at SF10) are shown, not hidden. Run your own with
+        {perfDominant} Zero row differences across every run; the exceptions are shown on the
+        <a href="/performance">performance page</a>, not hidden. Run your own with
         <code>BENCH_SCALE=1 ./scripts/benchmark-test.sh --compare-trino</code>.
       </p>
 
