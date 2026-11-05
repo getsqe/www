@@ -1,8 +1,8 @@
 {
   "score": {
-    "raw": 156,
+    "raw": 158,
     "max": 162,
-    "percent": 96.3
+    "percent": 97.5
   },
   "docUrl": "https://github.com/schubergphilis/sqe",
   "cells": [
@@ -214,13 +214,13 @@
       "key": "sqe:snowflake-horizon-catalog:v2",
       "feature": "Snowflake horizon catalog",
       "version": "V2",
-      "level": "partial"
+      "level": "full"
     },
     {
       "key": "sqe:snowflake-horizon-catalog:v3",
       "feature": "Snowflake horizon catalog",
       "version": "V3",
-      "level": "partial"
+      "level": "full"
     },
     {
       "key": "sqe:statistics:v2",
