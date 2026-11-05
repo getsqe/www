@@ -1,8 +1,8 @@
 {
   "score": {
-    "raw": 147,
+    "raw": 158,
     "max": 162,
-    "percent": 90.7
+    "percent": 97.5
   },
   "docUrl": "https://github.com/schubergphilis/sqe",
   "cells": [
@@ -94,7 +94,7 @@
       "key": "sqe:geometry-type:v3",
       "feature": "Geometry type",
       "version": "V3",
-      "level": "none"
+      "level": "partial"
     },
     {
       "key": "sqe:google-lakehouse:v2",
@@ -142,7 +142,7 @@
       "key": "sqe:multi-arg-transforms:v3",
       "feature": "Multi arg transforms",
       "version": "V3",
-      "level": "none"
+      "level": "partial"
     },
     {
       "key": "sqe:nanosecond-timestamps:v3",
@@ -208,19 +208,19 @@
       "key": "sqe:shredded-variant:v3",
       "feature": "Shredded variant",
       "version": "V3",
-      "level": "partial"
+      "level": "full"
     },
     {
       "key": "sqe:snowflake-horizon-catalog:v2",
       "feature": "Snowflake horizon catalog",
       "version": "V2",
-      "level": "partial"
+      "level": "full"
     },
     {
       "key": "sqe:snowflake-horizon-catalog:v3",
       "feature": "Snowflake horizon catalog",
       "version": "V3",
-      "level": "partial"
+      "level": "full"
     },
     {
       "key": "sqe:statistics:v2",
@@ -286,25 +286,25 @@
       "key": "sqe:unity-catalog:v2",
       "feature": "Unity catalog",
       "version": "V2",
-      "level": "partial"
+      "level": "full"
     },
     {
       "key": "sqe:unity-catalog:v3",
       "feature": "Unity catalog",
       "version": "V3",
-      "level": "partial"
+      "level": "full"
     },
     {
       "key": "sqe:unknown-type:v3",
       "feature": "Unknown type",
       "version": "V3",
-      "level": "partial"
+      "level": "full"
     },
     {
       "key": "sqe:variant-type:v3",
       "feature": "Variant type",
       "version": "V3",
-      "level": "partial"
+      "level": "full"
     },
     {
       "key": "sqe:write-insert:v2",
